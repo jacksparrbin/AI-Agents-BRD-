@@ -1,0 +1,22 @@
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project-specific ignored files
+# Ignore all bank-specific proprietary PDF documents to ensure compliance and confidentiality
+*.pdf
+**/*.pdf
+
+# IDE and tool configuration folders
+.vscode/
+.idea/
+.gemini/
+.antigravity/
+.system_generated/
+*.log
+*.tmp
