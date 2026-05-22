@@ -60,15 +60,20 @@ graph TD
     %% Khởi tạo Styles
     style A fill:#ECEFF1,stroke:#37474F,stroke-width:2px;
     style B fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px;
-    style C fill:#E8F5E9,stroke:#43A047,stroke-width:2px;
-    style D fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px;
+    style C fill:#FFFDE7,stroke:#FBC02D,stroke-width:2px;
+    style D fill:#E8F5E9,stroke:#43A047,stroke-width:2px;
+    style E fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px;
 
     A["Phase 1: Tiếp nhận yêu cầu sơ khai từ Stakeholder <br> (Phân loại: Onboarding / Transaction / General)"] 
     --> B["Phase 2: Phát hiện thông tin thiếu hụt & Hỏi lại <br> (Đặt 1-5 câu hỏi trắc nghiệm kèm đề xuất khuyên dùng)"]
     
-    B --> C["Phase 3: Chọn biểu mẫu & Soạn thảo BRD <br> (Dựng Flowchart Mermaid, Ma trận đặc tả nghiệp vụ, Popup, Data Mapping)"]
+    B --> C{"Stakeholder trả lời. <br> Có cần chỉnh sửa/bổ sung <br> thêm thông tin gì không?"}
     
-    C --> D["Phase 4: Soát lỗi & Hoàn thiện tài liệu <br> (Đồng bộ Glossary, Khóa cứng dữ liệu lỗi, Xuất bản MD)"]
+    C -- "Có (Bổ sung/Chỉnh sửa)" --> A
+    
+    C -- "Không (Hoàn tất đầu vào)" --> D["Phase 3: Chọn biểu mẫu & Soạn thảo BRD <br> (Dựng Flowchart Mermaid, Ma trận đặc tả nghiệp vụ, Popup, Data Mapping)"]
+    
+    D --> E["Phase 4: Soát lỗi & Hoàn thiện tài liệu <br> (Đồng bộ Glossary, Khóa cứng dữ liệu lỗi, Xuất bản MD)"]
 ```
 
 ---

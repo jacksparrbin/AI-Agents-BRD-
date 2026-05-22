@@ -116,6 +116,17 @@ Khi AI Agent nhận được yêu cầu sơ khai từ Stakeholder, hãy thực h
 *   Xác định hành trình cốt lõi (Happy Path) và các nhánh rẽ lỗi (Alternative/Exception Paths).
 *   Định nghĩa rõ các cổng kiểm tra ngầm (Jailbreak, AML check, CIF check, SMS OTP retry limits).
 
+### Bước 2.5: Thực hiện Vòng lặp phản hồi & Chốt chặn đầu vào (Mandatory Input Loop)
+> [!IMPORTANT]
+> **Tuyệt đối không được bỏ qua bước này để tự ý gen tài liệu ngay lập tức sau khi người dùng trả lời 1-5 câu hỏi làm rõ.**
+> 
+> Sau khi nhận được câu trả lời/phản hồi từ người dùng cho danh sách câu hỏi làm rõ ở Phase 2, AI Agent **bắt buộc** phải hỏi lại người dùng câu hỏi xác nhận sau trước khi chuyển sang bước viết tài liệu:
+> *"Cảm ơn anh/chị. Em đã ghi nhận các phương án lựa chọn trên. Trước khi em tiến hành biên soạn đặc tả BRD chi tiết, anh/chị có cần chỉnh sửa, bổ sung hoặc thêm mới thông tin đầu vào nào nữa không?"*
+> 
+> **Logic Xử lý Đầu vào**:
+> *   **Nếu người dùng chọn KHÔNG (Không bổ sung gì thêm)**: Xác nhận đầu vào đã chốt và chuyển sang **Bước 3** (Áp dụng mẫu và biên soạn).
+> *   **Nếu người dùng chọn CÓ (Có bổ sung/chỉnh sửa)**: Lấy toàn bộ thông tin mới người dùng vừa cung cấp, quay lại **Bước 1** để cập nhật phân tích nghiệp vụ và chạy lại quy trình làm rõ thông tin nếu phát hiện khoảng trống nghiệp vụ mới. Lặp lại bước xác nhận này cho tới khi người dùng hoàn toàn chốt đầu vào.
+
 ### Bước 3: Áp dụng Mẫu Tài liệu Tương ứng
 *   Nếu là đăng ký/định danh -> Sử dụng `brd_template_onboarding.md`.
 *   Nếu là thanh toán/tín dụng -> Sử dụng `brd_template_transaction_lending.md`.

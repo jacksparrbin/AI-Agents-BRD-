@@ -20,8 +20,8 @@ Chúng tôi cung cấp **2 tài liệu nền tảng** để định hình tiêu 
 *   **Mục đích:** Cung cấp định nghĩa kỹ năng chuyên biệt cho các mô hình ngôn ngữ lớn (như Claude, GPT, Gemini) để tự động hóa quy trình viết BRD.
 *   **Hành trình 4 bước của AI PO:**
     1.  **Phase 1:** Tiếp nhận & phân tích yêu cầu sơ khai (Analyze Inputs).
-    2.  **Phase 2:** Phát hiện thông tin thiếu hụt & đặt câu hỏi làm rõ nghiệp vụ (Identify Gaps & Ask).
-    3.  **Phase 3:** Lựa chọn biểu mẫu phù hợp và soạn thảo BRD chi tiết (Select Template & Draft).
+    2.  **Phase 2:** Phát hiện thông tin thiếu hụt, đặt câu hỏi làm rõ nghiệp vụ & xác nhận đầu vào (Identify Gaps, Ask & Confirm Loop).
+    3.  **Phase 3:** Lựa chọn biểu mẫu phù hợp và soạn thảo BRD chi tiết khi đã chốt xong đầu vào (Select Template & Draft).
     4.  **Phase 4:** Kiểm tra chéo, đồng bộ hóa thuật ngữ và hoàn thiện (Validate & Refine).
 
 ---

@@ -19,8 +19,10 @@ Future Agents khi thực hiện vai trò PO phải tuân thủ nghiêm ngặt qu
 ```mermaid
 graph TD
     A[Phase 1: Receive & Analyze Stakeholder Inputs] --> B[Phase 2: Identify Gaps & Ask Clarifying Questions]
-    B --> C[Phase 3: Select Appropriate Template & Draft BRD]
-    C --> D[Phase 4: Validate, Refine & Finalize BRD]
+    B --> C{Stakeholder answers. <br> Need to supplement or <br> edit inputs?}
+    C -- Yes --> A
+    C -- No --> D[Phase 3: Select Appropriate Template & Draft BRD]
+    D --> E[Phase 4: Validate, Refine & Finalize BRD]
 ```
 
 ### PHASE 1: TIẾP NHẬN & PHÂN TÍCH YÊU CẦU ĐẦU VÀO
@@ -30,7 +32,7 @@ graph TD
     *   *Thanh toán hóa đơn, nạp tiền dịch vụ, chuyển khoản, thay đổi hạn mức gói, quản lý khoản vay, mở mới thẻ* -> Chọn `brd_template_transaction_lending.md`
     *   *Tính năng nghiệp vụ chung hoặc khác* -> Chọn `brd_template_standard.md`
 
-### PHASE 2: PHÁT HIỆN THÔNG TIN THIẾU & HỎI LẠI (ASK CLARIFYING QUESTIONS)
+### PHASE 2: PHÁT HIỆN THÔNG TIN THIẾU & HỎI LẠI (ASK CLARIFYING QUESTIONS) & VÒNG LẶP XÁC NHẬN ĐẦU VÀO
 > [!IMPORTANT]
 > Đây là bước cốt lõi thể hiện tính chuyên nghiệp của PO. Tuyệt đối không được tự ý giả định các nghiệp vụ ngân hàng nhạy cảm (như chốt chặn bảo mật, hạn mức giao dịch, các điều kiện trùng lặp dữ liệu) khi thông tin chưa rõ ràng.
 
@@ -41,8 +43,19 @@ graph TD
     *   **Luôn đề xuất sẵn lựa chọn Khuyên dùng (Recommended)** dựa trên các tài liệu thực tế đã phân tích của MSB CTB và bôi đậm lựa chọn đó.
     *   Cung cấp cú pháp trả lời nhanh (ví dụ: phản hồi `defaults` hoặc `1a 2b 3c`) để giảm thiểu ma sát tương tác cho người dùng.
 
+*   **Vòng lặp xác nhận và bổ sung đầu vào (Mandatory Feedback Loop)**:
+    > [!IMPORTANT]
+    > **Tuyệt đối không được tự động tiến hành sinh tài liệu ngay sau khi nhận được câu trả lời từ người dùng.**
+    > 
+    > Sau khi Stakeholder hoàn tất lựa chọn các phương án giải quyết (hoặc chọn `defaults`), AI Agent **bắt buộc** phải hỏi lại người dùng câu hỏi chốt chặn sau:
+    > *"Cảm ơn anh/chị. Em đã ghi nhận các phương án lựa chọn trên. Trước khi em tiến hành biên soạn đặc tả BRD chi tiết, anh/chị có cần chỉnh sửa, bổ sung hoặc thêm mới thông tin đầu vào nào nữa không?"*
+    > 
+    > **Quy tắc điều hướng (Routing Logic)**:
+    > 1.  **Nếu người dùng phản hồi "Không / Không bổ sung gì thêm / Tiến hành làm tài liệu..."**: AI Agent xác nhận hoàn tất đầu vào và chính thức chuyển tiếp sang **Phase 3** để tiến hành biên soạn BRD.
+    > 2.  **Nếu người dùng phản hồi "Có" hoặc bổ sung/chỉnh sửa thêm thông tin**: AI Agent phải quay lại chạy lại quy trình từ **Phase 1** (Cập nhật lại phân tích đầu vào mới, rà soát lại khoảng trống thông tin và đặt tiếp câu hỏi trắc nghiệm làm rõ nếu có). Lặp lại bước hỏi xác nhận này cho tới khi Stakeholder khẳng định không còn thông tin nào cần bổ sung mới được gen tài liệu.
+
 ### PHASE 3: BIÊN SOẠN TÀI LIỆU BRD (DRAFTING)
-Sau khi Stakeholder phản hồi đầy đủ thông tin hoặc xác nhận đồng ý các giả định mặc định:
+Sau khi Stakeholder hoàn tất vòng lặp xác nhận đầu vào ở Phase 2 (khẳng định không còn thông tin bổ sung hay chỉnh sửa gì khác):
 1.  Tạo tài liệu BRD mới dạng Markdown đặt tên theo chuẩn: `DCTBR-[Mã phân hệ] BRD [Tên tính năng]-[Ngày viết].md`.
 2.  Sử dụng tệp template đã chọn ở Phase 1.
 3.  **Chi tiết hóa luồng nghiệp vụ chi tiết (The Matrix Table)**:
