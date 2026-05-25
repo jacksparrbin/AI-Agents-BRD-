@@ -1,6 +1,6 @@
 ---
 name: po-brd-creator
-description: "Sinh tài liệu Đặc tả Yêu cầu Nghiệp vụ (BRD) chuẩn ngân hàng số MSB CTB. Skill đóng vai Senior Product Owner AI Agent, tiếp nhận yêu cầu sơ khai từ Stakeholder và chuyển đổi thành BRD chất lượng cao dạng Markdown với đầy đủ User Story INVEST, Matrix Table, UI Copy/Popup, sơ đồ Mermaid, và Data Mapping. Dùng khi user nói: \"viết BRD\", \"tạo tài liệu nghiệp vụ\", \"đặc tả yêu cầu\", \"viết tài liệu cho tính năng\", \"BRD cho chức năng\", \"tạo BRD ngân hàng\", \"viết spec cho feature\", \"phân tích nghiệp vụ\", \"business requirement\", \"tài liệu yêu cầu\", \"đặc tả tính năng mới\", \"viết document cho dev\", hoặc khi user mô tả một tính năng ngân hàng số và muốn tạo tài liệu đặc tả. Cũng kích hoạt khi user paste mô tả tính năng + nói \"viết BRD đi\", \"làm tài liệu cho cái này\", \"đặc tả giúp em\". KHÔNG dùng cho: viết User Story đơn lẻ (dùng user-story-ac-writer), viết Use Case formal (dùng use-case-writer), viết PRD/URD tổng thể, viết test case kỹ thuật."
+description: "Sinh tài liệu Đặc tả Yêu cầu Nghiệp vụ (BRD) chuẩn ngân hàng số MSB CTB. Skill đóng vai Senior Product Owner AI Agent, tiếp nhận yêu cầu sơ khai từ Stakeholder và chuyển đổi thành BRD chất lượng cao dạng Markdown với đầy đủ User Story INVEST, Matrix Table, UI Copy/Popup, sơ đồ Mermaid, và Data Mapping. Dùng khi user nói: \"viết BRD\", \"tạo tài liệu nghiệp vụ\", \"đặc tả yêu cầu\", \"viết tài liệu cho tính năng\", \"BRD cho chức năng\", \"tạo BRD ngân hàng\", \"viết spec cho feature\", \"phân tích nghiệp vụ\", \"business requirement\", \"tài liệu yêu cầu\", \"đặc tả tính năng mới\", \"viết document cho dev\", hoặc khi user mô tả một tính năng ngân hàng số và muốn tạo tài liệu đặc tả. Cũng kích hoạt khi user paste mô tả tính năng + nói \"viết BRD đi\", \"làm tài liệu cho cái này\", \"đặc tả giúp em\". KHÔNG dùng cho: viết User Story đơn lẻ (dùng user-story-ac-writer), viết Use Case formal (dùng use-case-writer), viết PRD/URD tổng thể, viết test case kỹ thuật, validate BRD (dùng po-brd-validator), tạo UAT test cases (dùng po-uat-generator)."
 author: Bình Nguyễn Thanh
 ---
 
@@ -11,6 +11,20 @@ Skill này biến Claude thành một **Senior Product Owner (PO) AI Agent** chu
 Phương pháp luận tích hợp:
 - Kỹ thuật User Story chuẩn **INVEST** từ [ba-zone-user-story-ac-writer](https://github.com/phucnt-bazone-vietnam/ba-zone-user-story-ac-writer) (by Phúc NT · BA Zone)
 - Kỹ thuật Use Case Scoping theo **Karl Wiegers / Alistair Cockburn** từ [use-case-writer](https://github.com/phucnt-bazone-vietnam/use-case-writer) (by Phúc NT · BA Zone)
+
+## Kiến trúc Multi-Agent
+
+Skill này là **Agent 1** trong pipeline 3 agents:
+
+```
+[Agent 1: po-brd-creator] → BRD draft (.md)
+        ↓
+[Agent 2: po-brd-validator] → Validated BRD (.md) + Validation Report
+        ↓
+[Agent 3: po-uat-generator] → UAT Test Suite (.xlsx)
+```
+
+Agent 1 chịu trách nhiệm **Phase 1 + 2 + 3** (Phân tích → Hỏi → Draft BRD). Sau khi hoàn thành, chuyển BRD output cho Agent 2 validate.
 
 ## Tài liệu hỗ trợ — ĐỌC TRƯỚC KHI BẮT ĐẦU
 
@@ -33,7 +47,7 @@ Khi skill được kích hoạt, Agent **PHẢI đọc** các tài liệu sau th
 
 ---
 
-## Quy trình làm việc — 4 PHASE WORKFLOW
+## Quy trình làm việc — 3 PHASE WORKFLOW
 
 ```mermaid
 graph TD
@@ -41,7 +55,7 @@ graph TD
     B --> C{"Stakeholder: Cần bổ sung<br/>thêm thông tin?"}
     C -- "Có" --> A
     C -- "Không" --> D["Phase 3: Draft BRD<br/>(Matrix Table + Popup + Mermaid)"]
-    D --> E["Phase 4: Validate & Refine<br/>(20-Point Checklist ≥ 18/20)"]
+    D --> E["✅ Xuất BRD .md<br/>→ Chuyển cho Agent 2: po-brd-validator"]
 ```
 
 ---
@@ -170,77 +184,14 @@ Sau khi Stakeholder hoàn tất vòng lặp xác nhận đầu vào ở Phase 2:
 
 ---
 
-### PHASE 4: XÁC THỰC & HOÀN THIỆN — 20-POINT CHECKLIST
+## HANDOFF — Chuyển giao cho Agent 2
 
-> Phase 4 là cổng kiểm soát chất lượng cuối cùng. Agent **PHẢI đạt ≥ 18/20 ✅** mới được phép xuất tài liệu.
+Sau khi Phase 3 hoàn tất, Agent 1 **PHẢI**:
 
-#### NHÓM A: CẤU TRÚC TÀI LIỆU (5 tiêu chí)
-
-| STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
-| :---: | :--- | :--- | :--- |
-| **V1** | Metadata đầy đủ | Mã tài liệu, Phân hệ, Phiên bản, Ngày, Trạng thái đã điền đủ? | Bổ sung theo chuẩn `DCTBR-[Mã] BRD [Tên]-[Ngày].md` |
-| **V2** | Lịch sử thay đổi | Bảng Change Log có phiên bản, người thực hiện, người phê duyệt, mô tả (A/M/D)? | Bổ sung dòng phiên bản hiện tại |
-| **V3** | Glossary đầy đủ | Tất cả thuật ngữ viết tắt trong BRD đã được định nghĩa trong bảng Glossary? | Quét BRD, bổ sung từ viết tắt còn thiếu |
-| **V4** | User Story nhất quán | User Story ở Section 3 khớp với US đã viết ở Phase 1? | Đồng bộ lại |
-| **V5** | Scope nhất quán | In/Out-of-Scope khớp với Scope Phase 1? | Đồng bộ lại |
-
-#### NHÓM B: MA TRẬN PO — MATRIX TABLE (5 tiêu chí)
-
-| STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
-| :---: | :--- | :--- | :--- |
-| **V6** | Không placeholder trống | Còn ô nào ghi `[TBD]`, `...` hoặc để trống? | Điền nội dung cụ thể |
-| **V7** | Đủ 3 cột chuẩn | Mỗi bước có: Thao tác người dùng / Logic & Business Rules / Kết quả & Chuyển bước? | Bổ sung cột thiếu |
-| **V8** | Happy Path hoàn chỉnh | Luồng chính liên tục từ Entry Point → Success End State? Có bước nhảy cóc? | Bổ sung bước thiếu |
-| **V9** | Exception Path đầy đủ | Mỗi Business Rule đã mô tả cả trường hợp FAIL (popup / chặn / retry)? | Bổ sung nhánh Exception |
-| **V10** | System Check Checklists | Đã có: ① Root/Jailbreak ② Batch Time ③ OTP retry limits ④ Velocity Limits ⑤ Face Authen (QĐ 2345)? | Bổ sung theo `po_writing_guide_for_ai_agents.md` |
-
-#### NHÓM C: UI COPY & POPUP (3 tiêu chí)
-
-| STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
-| :---: | :--- | :--- | :--- |
-| **V11** | Popup đủ 3 thành phần | Mọi popup có đủ: Title + Content (dynamic) + CTA? | Bổ sung thành phần thiếu |
-| **V12** | Không mơ hồ | Có popup nào viết "Hệ thống báo lỗi" mà không nêu rõ nguyên nhân? | Viết lại cụ thể |
-| **V13** | Mã lỗi gắn popup | Mỗi popup có mã lỗi tham chiếu `[ERR_<MODULE>_<SỐ>]`? | Gán mã lỗi |
-
-#### NHÓM D: SƠ ĐỒ MERMAID (3 tiêu chí)
-
-| STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
-| :---: | :--- | :--- | :--- |
-| **V14** | Sơ đồ tồn tại | Có ≥ 1 sơ đồ Mermaid mô tả luồng To-be? | Vẽ sơ đồ từ Matrix Table |
-| **V15** | Đủ Actors | Tất cả Primary + Secondary Actors xuất hiện trong sơ đồ? | Bổ sung participant thiếu |
-| **V16** | Nhất quán Matrix Table | Thứ tự bước trong sơ đồ khớp với bảng? | Đồng bộ |
-
-#### NHÓM E: DATA & INTEGRATION (2 tiêu chí)
-
-| STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
-| :---: | :--- | :--- | :--- |
-| **V17** | Data Mapping tồn tại | Có bảng Request/Response giữa FE ↔ DIP ↔ Core? (bắt buộc cho Transaction/Lending) | Bổ sung Data Mapping |
-| **V18** | Tài liệu tham chiếu | Đã liệt kê QĐ NHNN, API Spec, Figma/Miro trong bảng Tham chiếu? | Bổ sung |
-
-#### NHÓM F: CHẤT LƯỢNG TỔNG THỂ (2 tiêu chí)
-
-| STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
-| :---: | :--- | :--- | :--- |
-| **V19** | Thuật ngữ nhất quán | Cùng 1 khái niệm được gọi tên giống nhau ở mọi nơi? (không lúc "TKTT" lúc "tài khoản nguồn") | Thống nhất 1 thuật ngữ |
-| **V20** | Cross-check Phase 1 ↔ 3 | US, Scope, Actors, Objectives Phase 1 được phản ánh đầy đủ trong BRD? Không có nội dung vượt Scope? | Loại bỏ Out-of-Scope hoặc cập nhật Phase 1 |
-
-**Quy tắc xuất BRD:**
-*   **≥ 18/20 ✅**: Đạt chuẩn, xuất cho Stakeholder review. Tiêu chí ⚠ (tối đa 2) phải kèm ghi chú.
-*   **< 18/20 ✅**: CHƯA ĐẠT — sửa FAIL trước khi xuất. KHÔNG trình bày BRD chưa đạt.
-
-Agent phải trình bày Validation Report trước khi xuất:
-```markdown
-### KẾT QUẢ KIỂM TRA CHẤT LƯỢNG BRD (PHASE 4 VALIDATION REPORT)
-| Nhóm | Tiêu chí | Kết quả | Ghi chú |
-| :--- | :--- | :---: | :--- |
-| A. Cấu trúc | V1–V5 | ✅/⚠/❌ | |
-| B. Matrix Table | V6–V10 | ✅/⚠/❌ | |
-| C. UI Copy & Popup | V11–V13 | ✅/⚠/❌ | |
-| D. Sơ đồ Mermaid | V14–V16 | ✅/⚠/❌ | |
-| E. Data & Integration | V17–V18 | ✅/⚠/❌ | |
-| F. Chất lượng tổng thể | V19–V20 | ✅/⚠/❌ | |
-| **TỔNG** | **20 tiêu chí** | **XX/20 ✅** | **ĐẠT / CHƯA ĐẠT** |
-```
+1.  **Lưu file BRD** với tên chuẩn: `DCTBR-[Mã phân hệ] BRD [Tên tính năng]-[Ngày viết].md`
+2.  **Thông báo cho Stakeholder**:
+    > *"Em đã hoàn thành bản thảo BRD. Bước tiếp theo, anh/chị hãy chuyển file BRD này cho Agent **po-brd-validator** để kiểm tra chất lượng 20 tiêu chí trước khi xuất bản chính thức."*
+3.  **KHÔNG tự validate** — việc kiểm tra 20-point checklist thuộc trách nhiệm của Agent 2 (po-brd-validator) để đảm bảo đánh giá độc lập, khách quan.
 
 ---
 
