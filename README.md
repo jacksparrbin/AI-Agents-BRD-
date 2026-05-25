@@ -42,39 +42,62 @@ po-brd-sharing-hub/
 ├── Guides/                  # 📖 Thư mục chứa cẩm nang & kỹ năng AI PO
 │   ├── README.md            # Hướng dẫn sử dụng cẩm nang để đào tạo AI
 │   ├── po_writing_guide_for_ai_agents.md    # Cẩm nang quy hoạch & chuẩn hóa viết BRD thực chiến
-│   └── po_brd_creator_skill.md              # File định nghĩa kỹ năng (Skill spec) cho AI PO Agent
+│   ├── po_brd_creator_skill.md              # [Agent 1] Kỹ năng phân tích & soạn thảo BRD draft
+│   ├── po_brd_validator_skill.md            # [Agent 2] Kỹ năng QA validate chất lượng độc lập 20 tiêu chí
+│   └── po_uat_generator_skill.md            # [Agent 3] Kỹ năng tự động sinh UAT Test Suite chuyên nghiệp
+├── Payment/                 # 💳 Phân hệ Payment
+│   └── UAT-PAY-VietQR_Scan_Transfer-20260525.xlsx  # Bộ UAT Test Suite VietQR chính thức dạng Excel
 └── Samples/                 # 🚀 Thư mục chứa tài liệu BRD mẫu thực tế
     ├── README.md            # Tổng quan và hướng dẫn học tập từ các mẫu BRD
-    ├── DCTBR-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md  # BRD mẫu quét VietQR cao cấp
+    ├── DCTBR-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md  # BRD mẫu quét VietQR cao cấp (Ver 2.1)
+    ├── UAT-PAY-VietQR_Scan_Transfer-20260525.xlsx  # Tệp UAT Test Suite mẫu dạng Excel
     └── sample_brd_atm_qr_withdrawal.md      # BRD mẫu rút tiền mặt QR tại cây ATM
 ```
 
 ---
 
-## 🤖 Quy trình Phân tích & Viết BRD của AI PO Agent
+## 🤖 Kiến trúc Quy trình Làm việc Multi-Agent mới (3-Agent Pipeline)
 
-Bộ kỹ năng [po_brd_creator_skill.md](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Guides/po_brd_creator_skill.md) định cấu hình AI PO Agent hoạt động theo một quy trình 4 giai đoạn tự động hóa cực kỳ nghiêm ngặt:
+Nhằm tối ưu hóa chất lượng đặc tả và loại bỏ hoàn toàn các lỗi chủ quan từ một AI Agent duy nhất, quy trình đã được nâng cấp lên **Kiến trúc Multi-Agent liên kết 3 Agent chuyên biệt**:
 
 ```mermaid
 graph TD
     %% Khởi tạo Styles
-    style A fill:#ECEFF1,stroke:#37474F,stroke-width:2px;
-    style B fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px;
-    style C fill:#FFFDE7,stroke:#FBC02D,stroke-width:2px;
+    style A fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px;
+    style B fill:#FFFDE7,stroke:#FBC02D,stroke-width:2px;
+    style C fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px;
     style D fill:#E8F5E9,stroke:#43A047,stroke-width:2px;
-    style E fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px;
+    style E fill:#ECEFF1,stroke:#37474F,stroke-width:2px;
 
-    A["Phase 1: Tiếp nhận yêu cầu sơ khai từ Stakeholder <br> (Phân loại: Onboarding / Transaction / General)"] 
-    --> B["Phase 2: Phát hiện thông tin thiếu hụt & Hỏi lại <br> (Đặt 1-5 câu hỏi trắc nghiệm kèm đề xuất khuyên dùng)"]
+    A["[Agent 1: po-brd-creator]<br/>Phân tích ➔ Hỏi làm rõ ➔ Draft bản thảo BRD"] 
+    --> E["Bản thảo BRD (.md)"]
     
-    B --> C{"Stakeholder trả lời. <br> Có cần chỉnh sửa/bổ sung <br> thêm thông tin gì không?"}
+    E --> B["[Agent 2: po-brd-validator]<br/>QA kiểm tra chất lượng độc lập theo 20 tiêu chí"]
     
-    C -- "Có (Bổ sung/Chỉnh sửa)" --> A
+    B --> C{"Kết quả Validation?<br/>(Strict Gate)"}
     
-    C -- "Không (Hoàn tất đầu vào)" --> D["Phase 3: Chọn biểu mẫu & Soạn thảo BRD <br> (Dựng Flowchart Mermaid, Ma trận đặc tả nghiệp vụ, Popup, Data Mapping)"]
+    C -- "Chưa đạt (< 18/20 ✅)" --> A
     
-    D --> E["Phase 4: Soát lỗi & Hoàn thiện tài liệu <br> (Đồng bộ Glossary, Khóa cứng dữ liệu lỗi, Xuất bản MD)"]
+    C -- "Đạt chuẩn (≥ 18/20 ✅)" --> D["[Agent 3: po-uat-generator]<br/>UAT Specialist sinh UAT Test Suite dạng Excel"]
+    
+    D --> F["Bộ hồ sơ nghiệm thu UAT (.xlsx)<br/>(Test Cases, Data, Traceability, Sign-off)"]
 ```
+
+*   **Agent 1 (po-brd-creator)**: Chịu trách nhiệm Phase 1 + 2 + 3. Trao đổi làm rõ nghiệp vụ và phác thảo bản thảo đặc tả đầu tiên.
+*   **Agent 2 (po-brd-validator)**: Đóng vai QA Validator độc lập ("fresh reader"), chấm điểm khách quan theo 20-point checklist (Cấu trúc, Matrix, UI Popup, Mermaid, API, Chất lượng). Đạt $\ge 18/20$ và vượt qua các cổng kiểm soát nghiêm ngặt mới cho đi tiếp.
+*   **Agent 3 (po-uat-generator)**: Đóng vai chuyên gia UAT, sinh bộ kịch bản kiểm thử nghiệp vụ chuyên nghiệp gồm 4 sheets có màu sắc, công thức tính toán và conditional formatting tự động.
+
+---
+
+## 📈 Lịch sử Phiên bản & Nhật ký Thay đổi
+
+Theo dõi các bước phát triển, nâng cấp và chuẩn hóa quy trình biên soạn đặc tả tài liệu trong hệ thống:
+
+| Phiên bản | Ngày cập nhật | Người thực hiện | Tóm tắt nội dung thay đổi nghiệp vụ & quy trình |
+| :---: | :---: | :--- | :--- |
+| **Ver 1.0** | 22/05/2026 | AI PO Agent | Khởi tạo Hub tiêu chuẩn, cung cấp các template (Standard, Onboarding, Transaction) và cẩm nang viết BRD thực chiến. |
+| **Ver 2.0** | 25/05/2026 | Antigravity PO Agent | Nâng cấp tài liệu mẫu quét VietQR chuyển khoản (Ver 2.0) tích hợp 10 chốt chặn nghiệp vụ (Root check, Overdraft source, QĐ 2345 Face Authen, Reversal 30s...). |
+| **Ver 2.1** | 25/05/2026 | Multi-Agent Team | **[MỚI NHẤT]** Thiết lập kiến trúc Multi-Agent 3 giai đoạn. Tinh gọn quy trình Agent 1 và bàn giao kiểm soát độc lập cho Agent 2 (Validate 20 tiêu chí) và Agent 3 (Tự động sinh UAT Test Suite dạng Excel). Hoàn thành bộ UAT Test Suite mẫu gửi vào thư mục `Samples/`. |
 
 ---
 
