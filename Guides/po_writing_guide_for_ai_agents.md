@@ -51,34 +51,84 @@ Trong mỗi BRD, bắt buộc phải cung cấp:
 
 ---
 
-## IV. QUY CHUẨN MÔ TẢ CHI TIẾT TỪNG BƯỚC HÀNH TRÌNH (THE PO MATRIX)
-Đây là cấu phần quan trọng nhất trong BRD. Khi mô tả một bước hành trình, PO Agent phải sử dụng cấu trúc bảng chuẩn hóa sau:
+## IV. QUY CHUẨN MÔ TẢ CHI TIẾT TỪNG BƯỚC HÀNH TRÌNH (PATTERN: SUB-STEP + BRANCHING MATRIX)
 
-### Bảng cấu trúc mô tả bước nghiệp vụ:
+Đây là cấu phần quan trọng nhất trong BRD. Áp dụng pattern **Sub-step + Branching Matrix** để tích hợp toàn bộ corner case vào 1 luồng hành trình tuần tự, tránh tách rời rule khỏi luồng.
+
+### 1. Nguyên tắc cốt lõi
+
+1.  **Bẻ nhỏ bước cha thành sub-step `X.Y`** (Bước X.Y: bước cha là X, sub-step là Y). Mỗi sub-step thực hiện **đúng 1 check / hành động duy nhất**. Tuyệt đối không nhồi nhiều check ngầm vào 1 row.
+2.  **Mỗi sub-step có Pass/Fail branching rõ ràng** trong cell "Kết quả & Chuyển bước". Reader nhìn cell là biết: pass → step nào, fail → popup nào / dừng luồng / retry.
+3.  **Runtime check phải inline vào matrix tại đúng sub-step**, KHÔNG được tách ra Section "Business Rules bổ sung" rời rạc. Section "Business Rules bổ sung" chỉ chứa rule **design-time**, **cross-cutting** hoặc **post-issuance**.
+4.  **Mỗi sub-step có Mã sự kiện log** theo convention `EVT_<MODULE>_<ACTION>_<RESULT>` để Dev/Ops đối soát log khi rule trigger.
+
+### 2. Cấu trúc bảng chuẩn hóa (7 cột)
+
+Mỗi bước cha (Bước 1, 2, 3, ...) là 1 bảng nhỏ riêng. Sub-step xếp thành **row**, attribute là **cột**:
+
 ```markdown
-### Bước X.Y: [Tên Bước Nghiệp Vụ]
-- **Kênh / PIC**: [Mobile App | Hệ thống DBS | Hệ thống Core | Khách hàng]
-- **Entry Point**: [Mô tả cách thức/màn hình dẫn khách hàng vào bước này]
+#### Bước X: [Tên Bước Cha — VD: Hoàn tất hồ sơ & ký số]
 
-| Thao tác người dùng | Logic & Kiểm tra hệ thống (Business Rules) | Kết quả & Chuyển bước (Next Action) |
-| :--- | :--- | :--- |
-| Khách hàng bấm [Tên Button] | 1. Hệ thống thực hiện kiểm tra ngầm... <br> 2. Các quy tắc xác thực dữ liệu đầu vào... | - Nếu Đạt: Chuyển sang Bước X.Z <br> - Nếu Lỗi: Hiển thị popup lỗi [Mã lỗi] |
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **X.1**<br>[Tên ngắn] | [Hệ thống / Khách hàng] | [Mô tả thao tác hoặc check 1 dòng] | [Rule chi tiết: ngưỡng, công thức, tham chiếu QĐ] | [Điều kiện pass] → **Bước X.2** | [Điều kiện fail] → Popup `[ERR_<MOD>_<NUM>]` + action cụ thể | Pass: `EVT_<MOD>_<ACT>_OK`<br>Fail: `EVT_<MOD>_<ACT>_BLOCKED` |
+| **X.2**<br>... | ... | ... | ... | ... | ... | ... |
 ```
 
-### Quy tắc kiểm tra ngầm hệ thống bắt buộc (System Check Checklists):
-1.  **Device Validation (Kiểm tra thiết bị)**:
-    *   *Root/Jailbreak Check*: Ngăn chặn cài đặt app trên thiết bị đã root hoặc bẻ khoá.
-    *   *Device Registration Limit*: Kiểm tra giới hạn đăng ký tài khoản trên cùng 1 thiết bị.
-2.  **Time & Maintenance Check (Kiểm tra giờ vận hành)**:
-    *   *Batch Time Check*: Kiểm tra nếu khách hàng đăng ký ngoài giờ làm việc hệ thống (ví dụ: giờ chạy batch thanh toán/đối soát từ 22h đêm - 7h sáng).
-3.  **Hạn mức & Giới hạn thử lại (Limits & Retry Controls)**:
-    *   *SMS OTP Retry Limit*: Nhập sai OTP tối đa 3 lần liên tiếp -> Khoá giao dịch hiện tại, yêu cầu gửi lại OTP. Gửi lại tối đa 3 lần/phiên -> huỷ luồng bắt đăng ký lại.
-    *   *Transaction Velocity Limits*: Hạn mức giao dịch tối đa theo lần, theo ngày của gói dịch vụ IBMB (ví dụ: chuyển khoản nhanh Napas 24/7 tối đa 499,999,999 VND/lần).
-4.  **Kiểm tra Trùng lặp (Duplicate Check)**:
-    *   *Phone / ID Duplicate Check*: Kiểm tra xem Số điện thoại hoặc CCCD đã được đăng ký tài khoản IBMB trên cả App mới và App cũ chưa để điều hướng thích hợp (Login hay gọi Call Center).
-5.  **Drop-off & Recovery (Thu hồi rớt luồng)**:
-    *   Nếu khách hàng rớt luồng và quay lại trong vòng $\le 15$ ngày: Hiển thị màn hình chào mừng quay lại, tự động điền (Auto-fill) toàn bộ thông tin đã điền trước đó.
-    *   Nếu $> 15$ ngày: Huỷ hồ sơ tạm, bắt đầu luồng đăng ký mới.
+### 3. Convention Mã sự kiện log
+
+Format: `EVT_<MODULE>_<ACTION>_<RESULT>`
+
+| Phần | Giá trị | Ví dụ |
+| :--- | :--- | :--- |
+| `<MODULE>` | Mã phân hệ viết tắt | `CARD`, `LEND`, `PAY`, `ONB`, `LIMIT`, `AUTH` |
+| `<ACTION>` | Tên check/thao tác | `BATCH`, `FACE`, `OTP`, `ISSUE`, `KYC`, `VELOCITY` |
+| `<RESULT>` | Kết quả | `OK` / `BLOCKED` / `LOCKED_24H` / `MISMATCH_LOCK` / `API_ERROR` / `RETRY` |
+
+**Ví dụ thực tế:**
+- `EVT_CARD_BATCH_OK` — Batch Time Check pass
+- `EVT_CARD_FACE_MISMATCH_LOCK` — Face Authen mismatch ≥ 3 lần, khóa luồng
+- `EVT_ONB_OTP_LOCKED_24H` — OTP sai ≥ 5 lần khóa 24h
+- `EVT_LEND_VELOCITY_EXCEEDED` — Vượt hạn mức giao dịch/ngày
+
+Mỗi sub-step ÍT NHẤT có 1 mã log cho Pass; nếu có nhánh Fail thì mã log Fail phải khác mã log Pass.
+
+### 4. Ví dụ minh họa — Bước "Ký số mở thẻ tín dụng"
+
+#### Bước 4: Hoàn tất hồ sơ & ký số phát hành thẻ
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **4.1**<br>Batch Time Check | Hệ thống | So sánh server time với cửa sổ batch 22h-01h | KH ký số trong batch window → chặn giao dịch | Ngoài batch → **Bước 4.2** | Trong batch → Popup `[ERR_CARD_010]` + lưu draft → KH retry sau 01h | Pass: `EVT_CARD_BATCH_OK`<br>Fail: `EVT_CARD_BATCH_BLOCKED` |
+| **4.2**<br>Face Authen | Khách hàng | Chụp ảnh live vs chip CCCD/VNeID | Tuân thủ QĐ 2345/QĐ-NHNN, đếm mismatch | Match → **Bước 4.3** | <3 lần: retry. ≥3 lần: dừng luồng + Popup `[ERR_CARD_011]` | Pass: `EVT_CARD_FACE_MATCH`<br>Fail (lock): `EVT_CARD_FACE_MISMATCH_LOCK` |
+| **4.3**<br>OTP Verify | Khách hàng | Nhập OTP SMS/Smart OTP | Đếm sai liên tiếp + resend | Đúng → **Bước 4.4** | Sai ≥5 lần: khóa 24h + Popup `[ERR_CARD_012]` | Pass: `EVT_CARD_OTP_VERIFIED`<br>Fail: `EVT_CARD_OTP_LOCKED_24H` |
+
+### 5. Thư viện kiểm tra ngầm hệ thống bắt buộc (System Check Library)
+
+Khi viết matrix, PO Agent phải kiểm tra xem hành trình có dính các check sau không, và nếu CÓ thì BẮT BUỘC mỗi check là 1 sub-step riêng trong matrix (không gom vào 1 row):
+
+1.  **Device Validation** — Root/Jailbreak Check, Device Registration Limit. EVT prefix: `EVT_<MOD>_DEVICE_*`.
+2.  **Batch Time Check** — Cửa sổ batch đối soát Core Banking (thường 22h-01h hoặc 22h-07h). EVT prefix: `EVT_<MOD>_BATCH_*`.
+3.  **Face Authen / Biometric** (QĐ 2345/QĐ-NHNN) — Liveness vs chip CCCD/VNeID. Bắt buộc khi giao dịch vượt ngưỡng 10tr/lần hoặc 20tr/ngày, hoặc khi mở sản phẩm tài chính. EVT: `EVT_<MOD>_FACE_*`.
+4.  **OTP Retry Limit** — Mặc định sai liên tiếp ≤ 5 lần (thẻ tín dụng) hoặc ≤ 3 lần (giao dịch nhỏ); resend ≤ 3 lần/phiên. EVT: `EVT_<MOD>_OTP_*`.
+5.  **Velocity Limits** — Hạn mức giao dịch tối đa theo lần / theo ngày (VD: chuyển khoản Napas 24/7 tối đa 499,999,999 VND/lần). EVT: `EVT_<MOD>_VELOCITY_*`.
+6.  **Duplicate Check** — SĐT / CCCD đã đăng ký? CIF tồn tại? EVT: `EVT_<MOD>_DUPLICATE_*`.
+7.  **Drop-off & Recovery** — KH rớt luồng quay lại ≤ 15 ngày → auto-fill. > 15 ngày → khởi tạo lại. EVT: `EVT_<MOD>_DROPOFF_*`.
+
+### 6. Vị trí của "Business Rules bổ sung"
+
+Sau bảng matrix tổng (Section X.1), tạo Section X.2 **"Quy tắc nghiệp vụ bổ sung (Design-time, Cross-cutting & Post-issuance Rules)"**. Trong section này:
+
+✅ **ĐƯỢC PHÉP** liệt kê:
+- Design-time rules (VD: quy chuẩn in ấn, schema hợp đồng cố định)
+- Cross-cutting rules (VD: drop-off recovery áp xuyên suốt mọi step)
+- Post-issuance rules (VD: vòng đời sản phẩm sau khi đã phát hành)
+
+❌ **KHÔNG ĐƯỢC PHÉP** liệt kê:
+- Runtime check (Batch, Face, OTP, Velocity, Device) — đã inline vào matrix
+- Bất kỳ rule nào gắn với 1 sub-step cụ thể trong matrix
+
+Tiêu chí tự kiểm tra: nếu rule có thể chỉ rõ "rule này được kiểm tra ở Bước X.Y" → rule đó PHẢI nằm trong matrix, không phải Section X.2.
 
 ---
 

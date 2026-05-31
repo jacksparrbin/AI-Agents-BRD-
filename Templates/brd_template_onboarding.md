@@ -60,19 +60,53 @@ Bảng ghi nhận lịch sử phát triển các tính năng định danh số.
 
 ## 5. ĐẶC TẢ CHI TIẾT CÁC BƯỚC THỦ TỤC & ĐIỀU KIỆN KIỂM TRA HỆ THỐNG
 
-### 5.1. Bảng Chi Tiết Luồng Đăng Ký và Xác Thực
-```markdown
-| STT | Tên Bước | PIC | Thao tác & Mô tả chi tiết hành vi | Điều kiện & Logic kiểm tra hệ thống (Business Rules) | Kết quả & Chuyển bước tiếp theo |
-| :---: | :--- | :--- | :--- | :--- | :--- |
-| **1** | Kiểm tra thiết bị | Hệ thống | Khách hàng mở ứng dụng lần đầu tiên sau khi tải về. | - Hệ thống quét thiết bị xem có dấu hiệu bị bẻ khóa (Jailbreak/Root). <br>- Thiết bị của khách hàng có kết nối mạng ổn định. | - Nếu an toàn: Hiển thị màn hình Welcome -> Chuyển sang **Bước 2**. <br>- Nếu phát hiện Jailbreak/Root: Khóa ứng dụng, hiển thị Popup báo lỗi bảo mật [ERR_DEVICE_01] -> Đóng app. |
-| **2** | Kiểm tra giờ batch | Hệ thống | Khách hàng bấm nút `[Đăng ký/Mở tài khoản]` | - Hệ thống kiểm tra thời gian hiện tại có nằm ngoài khung giờ làm việc của dịch vụ trực tuyến không (quy định từ 7h - 22h hàng ngày). | - Nếu trong giờ hoạt động: Chuyển sang **Bước 3**. <br>- Nếu ngoài giờ hoạt động: Hiển thị Popup thông báo hệ thống ngoài giờ làm việc [ERR_BATCH_02] -> Đóng thông báo. |
-| **3** | Đọc Điều khoản (T&C) | Khách hàng | Khách hàng đọc và tích chọn đồng ý các điều khoản sử dụng. | - Khách hàng bắt buộc phải tích chọn đầy đủ 3 checkbox đồng ý T&C (Bảo vệ dữ liệu cá nhân, Điều khoản tài khoản thanh toán, Điều khoản ngân hàng điện tử). | - Nếu tích đủ: Mở khóa (Enable) nút `[Tiếp tục]` -> Chuyển sang **Bước 4**. <br>- Nếu thiếu bất kỳ checkbox nào: Khóa (Disable) nút `[Tiếp tục]`. |
-| **4** | Xác thực SĐT & OTP | Khách hàng / Hệ thống | Khách hàng nhập số điện thoại -> Nhận SMS OTP -> Nhập mã OTP gồm 6 chữ số. | - Số điện thoại phải đúng định dạng mạng viễn thông Việt Nam. <br>- Kiểm tra số lần nhập sai OTP liên tiếp $\le 3$ lần. <br>- Kiểm tra hiệu lực mã OTP (trong vòng 180 giây). | - Nếu đúng OTP: Chuyển sang **Bước 5** (Kiểm tra trùng lặp và drop-off). <br>- Nếu nhập sai $\ge 3$ lần hoặc hết hạn gửi lại: Khóa luồng trong ngày [ERR_OTP_03] -> Trở lại màn hình nhập SĐT. |
-| **5** | Kiểm tra Drop-off | Hệ thống | Sau khi xác thực OTP thành công. | - Hệ thống kiểm tra xem Số điện thoại này đã từng bắt đầu luồng đăng ký nhưng bị rớt (Drop-off) trong vòng 15 ngày gần nhất không. | - Nếu có hồ sơ drop-off $\le 15$ ngày: Hiển thị màn hình chào mừng trở lại -> Cho phép Khách hàng đi tiếp các bước dở dang với thông tin tự động điền sẵn (Auto-fill). <br>- Nếu không có hoặc $> 15$ ngày: Chuyển sang **Bước 6** (Đăng ký mới từ đầu). |
-| **6** | Xác minh GTTT | Khách hàng | Khách hàng chọn 1 trong 2 phương thức xác thực: <br>1. Quét chip NFC giấy tờ (Mặc định). <br>2. Liên kết qua ứng dụng VNeID. | **Trường hợp NFC**: <br>- Kiểm tra thiết bị có hỗ trợ tính năng NFC và đang bật NFC không. <br>- Đọc dữ liệu từ chip thẻ CCCD gắn chip. <br>**Trường hợp VNeID**: <br>- Gọi liên kết sang cổng ứng dụng VNeID để lấy Consent chia sẻ thông tin định danh cá nhân của Bộ Công An. | - Nếu thành công: Chuyển sang **Bước 7** (Xác thực khuôn mặt). <br>- Nếu quét NFC thất bại 3 lần liên tiếp: Tự động điều hướng Khách hàng sang phương thức Liên kết ứng dụng VNeID [ERR_NFC_04]. |
-```
+Áp dụng pattern **Sub-step + Branching Matrix** (xem cẩm nang `Guides/po_writing_guide_for_ai_agents.md` Section IV). Mỗi bước cha là 1 bảng nhỏ với 7 cột chuẩn.
+
+### 5.1. Bảng Chi Tiết Luồng Đăng Ký và Xác Thực (eKYC Journey Matrix)
+
+#### Bước 1: Kiểm tra thiết bị & Giờ vận hành
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1.1**<br>Device Check | Hệ thống | KH mở app lần đầu sau khi tải về | Quét Jailbreak/Root + kiểm tra kết nối mạng ổn định | Thiết bị an toàn → **Bước 1.2** | Jailbreak/Root phát hiện → Popup `[ERR_DEVICE_01]` "Thiết bị không an toàn" → đóng app | Pass: `EVT_ONB_DEVICE_OK`<br>Fail: `EVT_ONB_DEVICE_JAILBREAK` |
+| **1.2**<br>Batch Time Check | Hệ thống | KH bấm `[Đăng ký/Mở tài khoản]` | So sánh server time với cửa sổ vận hành (07h00 - 22h00 hàng ngày) | Trong giờ → **Bước 2.1** | Ngoài giờ → Popup `[ERR_BATCH_02]` "Hệ thống chạy batch" → hướng dẫn quay lại sau | Pass: `EVT_ONB_BATCH_OK`<br>Fail: `EVT_ONB_BATCH_BLOCKED` |
+
+#### Bước 2: Điều khoản & Xác thực SĐT
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **2.1**<br>Read T&C | Khách hàng | KH đọc và tích chọn 3 checkbox T&C | Bắt buộc tích đủ: Bảo vệ DLCN + Điều khoản TKTT + Điều khoản eBank | Tích đủ → enable `[Tiếp tục]` → **Bước 2.2** | Thiếu checkbox → disable `[Tiếp tục]` | Pass: `EVT_ONB_TNC_ACCEPTED`<br>Fail: `EVT_ONB_TNC_INCOMPLETE` |
+| **2.2**<br>Phone Verify | Khách hàng | KH nhập SĐT → nhận SMS OTP → nhập mã 6 chữ số | Validate SĐT VN + OTP hiệu lực 180 giây + retry ≤ 3 lần | OTP đúng → **Bước 3.1** | Sai ≥3 lần / hết hạn resend → Popup `[ERR_OTP_03]` khóa luồng trong ngày | Pass: `EVT_ONB_OTP_VERIFIED`<br>Fail: `EVT_ONB_OTP_LOCKED_DAY` |
+
+#### Bước 3: Kiểm tra Drop-off & Duplicate
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **3.1**<br>Drop-off Recovery | Hệ thống | Sau khi OTP success, kiểm tra hồ sơ drop-off cũ | SĐT có hồ sơ rớt luồng ≤ 15 ngày? | Có hồ sơ cũ → màn "Chào mừng quay lại" + auto-fill → **tiếp bước dở dang** | Không có / >15 ngày → khởi tạo mới → **Bước 4.1** | Pass: `EVT_ONB_DROPOFF_RECOVERED` / `EVT_ONB_DROPOFF_NONE` |
+
+#### Bước 4: Xác minh giấy tờ tùy thân (eKYC)
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **4.1**<br>Choose Method | Khách hàng | KH chọn 1 trong 2: (1) Quét chip NFC CCCD, (2) Liên kết VNeID | Mặc định đề xuất NFC nếu thiết bị hỗ trợ | KH chọn NFC → **Bước 4.2a**.<br>KH chọn VNeID → **Bước 4.2b** | — | Pass: `EVT_ONB_KYC_METHOD_NFC` / `EVT_ONB_KYC_METHOD_VNEID` |
+| **4.2a**<br>NFC Scan | Khách hàng | KH áp CCCD vào lưng máy để đọc chip | Thiết bị bật NFC + đọc dữ liệu chip CCCD | Đọc thành công → **Bước 4.3** | Thất bại 3 lần liên tiếp → Popup `[ERR_NFC_04]` tự động chuyển sang VNeID (**Bước 4.2b**) | Pass: `EVT_ONB_NFC_READ_OK`<br>Fail: `EVT_ONB_NFC_FAILED_FALLBACK` |
+| **4.2b**<br>VNeID Link | Khách hàng | Hệ thống mở deeplink sang app VNeID lấy Consent | OAuth2 với Bộ Công An | Consent OK → nhận thông tin định danh → **Bước 4.3** | KH từ chối / OAuth timeout → Popup `[ERR_VNEID_05]` | Pass: `EVT_ONB_VNEID_CONSENT_OK`<br>Fail: `EVT_ONB_VNEID_CONSENT_DENIED` |
+| **4.3**<br>Face Authen | Khách hàng | Chụp ảnh khuôn mặt live so khớp ảnh chân dung chip/VNeID | Liveness detection + tuân thủ QĐ 2345/QĐ-NHNN | Match ≥ ngưỡng AI → **Bước 5.1** | Mismatch ≥3 lần → Popup `[ERR_FACE_06]` hướng dẫn ra quầy | Pass: `EVT_ONB_FACE_MATCH`<br>Fail: `EVT_ONB_FACE_MISMATCH_LOCK` |
+
+#### Bước 5: AML Check & Mở CIF
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **5.1**<br>AML Screening | Hệ thống | Đối soát CCCD với danh sách AML/PCRT | Blacklist + PEP + Sanctions list | Sạch → **Bước 5.2** | Hit AML → Popup `[ERR_AML_07]` + escalate Khối QTRR + đóng luồng | Pass: `EVT_ONB_AML_CLEAN`<br>Fail: `EVT_ONB_AML_HIT_ESCALATE` |
+| **5.2**<br>Open CIF | Hệ thống | Tạo CIF mới + cấp tài khoản IBMB + mật khẩu tạm | Đồng bộ qua DIP → Core Banking → DBS | CIF mở thành công → **Bước 5.3** | API timeout: Popup `[ERR_SYS_999]` (Thử lại / Hotline) | Pass: `EVT_ONB_CIF_CREATED`<br>Fail: `EVT_ONB_CIF_API_ERROR` |
+| **5.3**<br>First Login | Khách hàng | KH đăng nhập lần đầu bằng mật khẩu tạm, đổi mật khẩu mới | Validate password policy (8 ký tự, có số + ký tự đặc biệt) | Đăng nhập thành công → kết thúc luồng eKYC → kích hoạt combo sản phẩm | Sai mật khẩu/policy → cho retry | Pass: `EVT_ONB_FIRST_LOGIN_OK`<br>Fail: `EVT_ONB_PWD_POLICY_FAILED` |
+
+---
 
 ### 5.2. Logic Kiểm tra Trùng lặp & Phân loại Khách hàng (Duplicate Check Rules)
+
+> **Cross-cutting Rule:** Được kiểm tra ngầm tại Bước 4.3 (sau khi có CCCD từ NFC/VNeID). Routing 4 trường hợp dưới đây.
+
 Sau khi thu thập số CCCD của khách hàng từ NFC hoặc VNeID, hệ thống bắt buộc phải kiểm tra thông tin đối soát trên toàn ngân hàng:
 
 | Trường hợp | Đã tồn tại App Mới | Đã tồn tại App Cũ | Đã có CIF tại Core | Hành động hệ thống mong muốn (Next Action) & Copywriting tương ứng |

@@ -69,18 +69,51 @@ Mô tả sơ đồ luồng quy trình tổng quan và các điểm tích hợp.
 ---
 
 ## 6. ĐẶC TẢ CHI TIẾT LUỒNG HÀNH TRÌNH NGƯỜI DÙNG & HỆ THỐNG
-Mô tả chi tiết hành trình từ đầu vào (Entrypoint) cho tới điểm kết thúc tốt đẹp (Happy Path) và các luồng lỗi rẽ nhánh (Alternative/Exception Paths).
 
-### Luồng hành trình chính: [Tên luồng - ví dụ: Thay đổi hạn mức giao dịch]
+Mô tả chi tiết hành trình theo pattern **Sub-step + Branching Matrix** (tham chiếu cẩm nang `Guides/po_writing_guide_for_ai_agents.md` Section IV). Mỗi bước cha là 1 bảng nhỏ, sub-step xếp thành row với 7 cột chuẩn.
+
+### 6.1. Bảng Chi Tiết Hành Trình (To-be Journey Matrix)
+
 - **Kênh thực hiện**: [Mobile App / Web Digibank]
-- **Điều kiện đầu vào**: [Ví dụ: Khách hàng đã đăng nhập thành công vào ứng dụng và có tài khoản thanh toán hoạt động (Active)]
+- **Điều kiện đầu vào**: [Ví dụ: KH đã đăng nhập thành công + có TKTT hoạt động]
 
-| STT Bước | Thao tác Người dùng | Logic hệ thống & Quy tắc kiểm tra (Business Rules) | Kết quả & Chuyển bước tiếp theo |
-| :---: | :--- | :--- | :--- |
-| **Bước 1** | Khách hàng truy cập vào menu `[Cài đặt hạn mức]` | 1. Hệ thống thực hiện kiểm tra ngầm trạng thái gói dịch vụ của khách hàng. <br> 2. Kiểm tra thiết bị có thỏa mãn quy tắc bảo mật (Jailbreak/Root Check). | - Nếu Hợp lệ: Hiển thị màn hình cấu hình hạn mức -> Chuyển sang **Bước 2**. <br> - Nếu Không hợp lệ: Hiển thị popup báo lỗi [Mã lỗi]. |
-| **Bước 2** | Khách hàng nhập hạn mức mới mong muốn và bấm `[Tiếp tục]` | 1. Hệ thống kiểm tra hạn mức nhập vào không được vượt quá hạn mức tối đa quy định của gói dịch vụ. <br> 2. Kiểm tra điều kiện sinh trắc học bắt buộc theo quy định NHNN đối với hạn mức thay đổi. | - Nếu Thỏa mãn: Gửi SMS OTP đến số điện thoại đăng ký -> Chuyển sang **Bước 3**. <br> - Nếu Không thỏa mãn: Hiển thị thông báo hướng dẫn. |
-| **Bước 3** | Khách hàng nhập mã SMS OTP và bấm `[Xác nhận]` | 1. Hệ thống kiểm tra tính khớp của mã OTP. <br> 2. Kiểm tra giới hạn số lần nhập sai OTP (không quá 3 lần). | - Nếu Đúng OTP: Lưu hạn mức mới thành công -> Chuyển sang màn hình kết quả thành công (**Bước 4**). <br> - Nếu Sai OTP < 3 lần: Báo lỗi nhập sai và cho phép nhập lại. <br> - Nếu Sai OTP = 3 lần: Khoá luồng thay đổi hạn mức trong ngày. |
-| **Bước 4** | Khách hàng xem màn hình thông báo thành công | Hệ thống cập nhật hạn mức mới xuống DB DBS và Core Banking. | Kết thúc luồng hành trình. |
+#### Bước 1: Truy cập & Kiểm tra thiết bị
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1.1**<br>Device Check | Hệ thống | KH bấm vào menu `[Cài đặt hạn mức]` | Quét Jailbreak/Root + kiểm tra gói dịch vụ IBMB còn hoạt động | Thiết bị + gói OK → **Bước 2.1** | Jailbreak/Root: chặn vào màn, Popup `[ERR_DEVICE_001]`.<br>Gói bị khóa: Popup `[ERR_PKG_002]` hướng dẫn liên hệ Hotline | Pass: `EVT_LIMIT_DEVICE_OK`<br>Fail: `EVT_LIMIT_DEVICE_BLOCKED` |
+
+#### Bước 2: Nhập hạn mức mới & Validate
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **2.1**<br>Input Limit | Khách hàng | KH nhập hạn mức mới mong muốn | Validate định dạng số + ngưỡng tối đa của gói dịch vụ IBMB | ≤ max của gói → **Bước 2.2** | > max: Popup `[ERR_LIMIT_003]` hiển thị ngưỡng tối đa cho phép | Pass: `EVT_LIMIT_INPUT_OK`<br>Fail: `EVT_LIMIT_INPUT_EXCEEDED` |
+| **2.2**<br>Biometric Trigger Check | Hệ thống | Kiểm tra ngưỡng QĐ 2345/QĐ-NHNN | Hạn mức mới > 10tr/lần hoặc > 20tr/ngày → bắt buộc Face Authen | Cần biometric → **Bước 2.3** Face Authen.<br>Không cần → **Bước 3.1** trực tiếp | — | Pass: `EVT_LIMIT_BIOMETRIC_REQUIRED` / `EVT_LIMIT_BIOMETRIC_SKIPPED` |
+| **2.3**<br>Face Authen | Khách hàng | Chụp ảnh live so khớp chip CCCD/VNeID | Tuân thủ QĐ 2345/QĐ-NHNN | Match → **Bước 3.1** | Mismatch ≥3 lần: Popup `[ERR_FACE_004]` dừng luồng | Pass: `EVT_LIMIT_FACE_MATCH`<br>Fail: `EVT_LIMIT_FACE_MISMATCH_LOCK` |
+
+#### Bước 3: Xác thực OTP & Cập nhật
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **3.1**<br>Send OTP | Hệ thống | Gửi SMS OTP đến SĐT đăng ký | Hiệu lực OTP 180 giây | OTP gửi thành công → **Bước 3.2** | Lỗi gateway SMS: Popup `[ERR_OTP_005]` (Thử lại / Hotline) | Pass: `EVT_LIMIT_OTP_SENT`<br>Fail: `EVT_LIMIT_OTP_GATEWAY_ERROR` |
+| **3.2**<br>Verify OTP | Khách hàng | KH nhập mã OTP và bấm `[Xác nhận]` | Đếm số lần sai liên tiếp ≤ 3 | OTP đúng → **Bước 3.3** | Sai liên tiếp ≥3 lần: Popup `[ERR_OTP_006]` khóa luồng thay đổi hạn mức trong ngày | Pass: `EVT_LIMIT_OTP_VERIFIED`<br>Fail: `EVT_LIMIT_OTP_LOCKED_DAY` |
+| **3.3**<br>Update DB | Hệ thống | Cập nhật hạn mức mới xuống DBS + Core Banking | Đồng bộ qua DIP | Cập nhật thành công → **Bước 4.1** | API timeout: Popup `[ERR_SYS_999]` (Thử lại / Hotline) | Pass: `EVT_LIMIT_UPDATE_SUCCESS`<br>Fail: `EVT_LIMIT_UPDATE_API_ERROR` |
+
+#### Bước 4: Hiển thị kết quả
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **4.1**<br>Show Success | Khách hàng | KH xem màn hình thông báo cập nhật thành công | Hiển thị hạn mức mới + ngày hiệu lực | Kết thúc luồng | — | Pass: `EVT_LIMIT_FLOW_COMPLETED` |
+
+---
+
+### 6.2. Quy tắc nghiệp vụ bổ sung (Design-time, Cross-cutting & Post-issuance Rules)
+
+> **Lưu ý:** Các runtime check trong luồng (Device Check, Biometric Trigger, OTP Retry) đã inline vào matrix 6.1. Section này chỉ liệt kê rule **design-time / cross-cutting / post-issuance**.
+
+1.  **[Quy tắc cross-cutting]** — VD: Drop-off Recovery 15 ngày: KH thoát giữa chừng → auto-save draft → quay lại trong 15 ngày khôi phục từ bước rớt.
+2.  **[Quy tắc design-time]** — VD: Hạn mức tối đa của từng gói IBMB cố định theo bảng cấu hình của Khối Quản trị Rủi ro.
+3.  **[Quy tắc post-issuance]** — VD: Sau khi đổi hạn mức thành công, KH không được đổi tiếp trong 24h kế tiếp.
 
 ---
 

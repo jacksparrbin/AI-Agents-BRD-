@@ -50,6 +50,7 @@ po-brd-sharing-hub/
 └── Samples/                 # 🚀 Thư mục chứa tài liệu BRD mẫu thực tế
     ├── README.md            # Tổng quan và hướng dẫn học tập từ các mẫu BRD
     ├── DCTBR-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md  # BRD mẫu quét VietQR cao cấp (Ver 2.1)
+    ├── DCTBR-[CARD] BRD Tùy chọn ảnh hiển thị thẻ tín dụng khi đăng ký mới.md  # BRD mẫu mở thẻ tự chọn ảnh hiển thị (Ver 2.2)
     ├── UAT-PAY-VietQR_Scan_Transfer-20260525.xlsx  # Tệp UAT Test Suite mẫu dạng Excel
     └── sample_brd_atm_qr_withdrawal.md      # BRD mẫu rút tiền mặt QR tại cây ATM
 ```
@@ -97,7 +98,8 @@ Theo dõi các bước phát triển, nâng cấp và chuẩn hóa quy trình bi
 | :---: | :---: | :--- | :--- |
 | **Ver 1.0** | 22/05/2026 | AI PO Agent | Khởi tạo Hub tiêu chuẩn, cung cấp các template (Standard, Onboarding, Transaction) và cẩm nang viết BRD thực chiến. |
 | **Ver 2.0** | 25/05/2026 | Antigravity PO Agent | Nâng cấp tài liệu mẫu quét VietQR chuyển khoản (Ver 2.0) tích hợp 10 chốt chặn nghiệp vụ (Root check, Overdraft source, QĐ 2345 Face Authen, Reversal 30s...). |
-| **Ver 2.1** | 25/05/2026 | Multi-Agent Team | **[MỚI NHẤT]** Thiết lập kiến trúc Multi-Agent 3 giai đoạn. Tinh gọn quy trình Agent 1 và bàn giao kiểm soát độc lập cho Agent 2 (Validate 20 tiêu chí) và Agent 3 (Tự động sinh UAT Test Suite dạng Excel). Hoàn thành bộ UAT Test Suite mẫu gửi vào thư mục `Samples/`. |
+| **Ver 2.1** | 25/05/2026 | Multi-Agent Team | Thiết lập kiến trúc Multi-Agent 3 giai đoạn. Tinh gọn quy trình Agent 1 và bàn giao kiểm soát độc lập cho Agent 2 (Validate 20 tiêu chí) và Agent 3 (Tự động sinh UAT Test Suite dạng Excel). Hoàn thành bộ UAT Test Suite mẫu gửi vào thư mục `Samples/`. |
+| **Ver 2.2** | 31/05/2026 | Antigravity PO Agent | **[MỚI NHẤT]** Nâng cấp chuẩn đặc tả sang **Sub-step & Branching Matrix (7 cột)** tích hợp chốt chặn inline, hệ thống check logic và mã hóa sự kiện log `EVT_`. Áp dụng biên soạn thực chiến mẫu BRD Tùy chọn Card Art (`Samples/DCTBR-[CARD]...`) và báo cáo thẩm định đạt chuẩn chất lượng 20/20. |
 
 ---
 

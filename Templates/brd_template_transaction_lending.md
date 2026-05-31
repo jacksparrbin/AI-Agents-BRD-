@@ -44,28 +44,51 @@ Bảng theo dõi các lần cải tiến luồng giao dịch tài chính trực 
 
 ## 5. ĐẶC TẢ CHI TIẾT LUỒNG NGHIỆP VỤ & KIỂM TRA ĐIỀU KIỆN (BUSINESS RULES)
 
-### 5.1. Mô Tả Luồng Đăng Ký Cấp Hạn Mức Tín Dụng (Lending Flow)
-```markdown
-| STT | Tên Bước | PIC | Thao tác người dùng | Logic nghiệp vụ & Kiểm tra ngầm hệ thống | Kết quả & Chuyển bước tiếp theo |
-| :---: | :--- | :--- | :--- | :--- | :--- |
-| **1** | Khảo sát & Tính toán | Khách hàng | Khách hàng chọn `[Khám phá hạn mức]` -> Trả lời bộ câu hỏi khảo sát nhanh về thu nhập. | - Gọi dịch vụ Calculator Engine để tính hạn mức thấu chi dự kiến dựa trên bộ tiêu chí của Criteria Management. | - Hiển thị hạn mức phê duyệt dự kiến và các đề xuất gói thẻ phù hợp -> Chuyển sang **Bước 2**. |
-| **2** | Nhập SĐT & Check eBank | Khách hàng / Hệ thống | Khách hàng xác thực Số điện thoại. | - Kiểm tra xem SĐT này đã đăng ký sử dụng dịch vụ ngân hàng điện tử (eBank) chưa. | - Nếu chưa: Chuyển sang bước Onboarding. <br>- Nếu có: Yêu cầu Đăng nhập tài khoản hiện hữu -> Chuyển sang **Bước 3**. |
-| **3** | Khai báo hồ sơ vay | Khách hàng | Khách hàng kiểm tra thông tin tự động điền (Auto-fill) và khai báo thêm các trường bắt buộc. | - Tự động điền các thông tin đã lưu gần nhất trong hệ thống (nếu có hồ sơ drop-off). <br>- Kiểm tra định dạng dữ liệu đầu vào. | - Nếu hợp lệ: Hiển thị Đơn đề nghị cấp hạn mức kèm TnC -> Chuyển sang **Bước 4**. |
-| **4** | Phê duyệt & Trả kết quả | Hệ thống | Khách hàng ký số Đơn đề nghị -> Xác nhận gửi hồ sơ. | - Hệ thống gửi hồ sơ sang cổng BPM Ops xét duyệt tự động. <br>- Nếu thời gian xử lý $\le 5$ giây: Trả kết quả trực tiếp trên màn hình. <br>- Nếu thời gian xử lý $> 5$ giây: Điều hướng sang trang theo dõi hồ sơ. | - Thành công: Hiển thị màn hình tiếp nhận và cấp hạn mức -> Chuyển bước phát hành thẻ. <br>- Thất bại: Hiển thị thông báo hướng dẫn liên hệ Hotline hỗ trợ. |
-```
+Áp dụng pattern **Sub-step + Branching Matrix** (xem cẩm nang `Guides/po_writing_guide_for_ai_agents.md` Section IV). Mỗi bước cha là 1 bảng nhỏ với 7 cột chuẩn.
+
+### 5.1. Bảng Chi Tiết Luồng Đăng Ký Cấp Hạn Mức Tín Dụng (Lending Journey Matrix)
+
+#### Bước 1: Khám phá hạn mức & Tính toán
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1.1**<br>Survey Input | Khách hàng | KH bấm `[Khám phá hạn mức]` → trả lời bộ câu hỏi khảo sát thu nhập | Validate dữ liệu khảo sát + Required fields | Đủ thông tin → **Bước 1.2** | Thiếu trường → highlight + cho phép edit | Pass: `EVT_LEND_SURVEY_OK`<br>Fail: `EVT_LEND_SURVEY_INCOMPLETE` |
+| **1.2**<br>Calculator Engine | Hệ thống | Gọi Calculator Engine để tính hạn mức thấu chi dự kiến | Áp tập luật Criteria Management + lịch sử tín dụng CIC | Trả về hạn mức dự kiến → hiển thị màn đề xuất → **Bước 2.1** | API Calculator timeout: Popup `[ERR_CALC_001]` (Thử lại / Hotline) | Pass: `EVT_LEND_CALC_SUCCESS`<br>Fail: `EVT_LEND_CALC_API_ERROR` |
+
+#### Bước 2: Xác thực SĐT & Phân nhánh ETB/NTB
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **2.1**<br>Phone Verify | Khách hàng | KH nhập SĐT → nhận SMS OTP → xác thực | OTP retry ≤ 3 lần, resend ≤ 3 lần/phiên | OTP đúng → **Bước 2.2** | Sai ≥3 lần: Popup `[ERR_OTP_002]` khóa luồng | Pass: `EVT_LEND_OTP_VERIFIED`<br>Fail: `EVT_LEND_OTP_LOCKED` |
+| **2.2**<br>eBank Check | Hệ thống | Kiểm tra SĐT đã đăng ký eBank chưa | Query CIF + tài khoản IBMB | Có eBank → yêu cầu KH đăng nhập → **Bước 3.1**.<br>Chưa có → chuyển sang luồng Onboarding | — | Pass: `EVT_LEND_EBANK_FOUND` / `EVT_LEND_EBANK_NONE_GOTO_ONB` |
+
+#### Bước 3: Khai báo hồ sơ vay
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **3.1**<br>Auto-fill Drop-off | Hệ thống | Tự động điền thông tin từ hồ sơ drop-off cũ (≤15 ngày) hoặc Core | Drop-off Recovery rule | Có data → pre-fill form → **Bước 3.2** | Không có data → form trống → **Bước 3.2** | Pass: `EVT_LEND_AUTOFILL_DROPOFF` / `EVT_LEND_AUTOFILL_NONE` |
+| **3.2**<br>Form Input | Khách hàng | KH kiểm tra + khai báo các trường bắt buộc (nghề, thu nhập, mục đích vay) | Validate định dạng + ngưỡng tối thiểu (VD: thu nhập ≥ 5tr/tháng) | Đủ + hợp lệ → **Bước 4.1** | Thiếu/sai → highlight + cho phép edit | Pass: `EVT_LEND_FORM_VALID`<br>Fail: `EVT_LEND_FORM_INVALID` |
+
+#### Bước 4: Ký số & Phê duyệt
+
+| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **4.1**<br>E-sign Contract | Khách hàng | KH đọc đơn đề nghị cấp hạn mức + ký số bằng OTP/Smart OTP | Tuân thủ Luật GDDT 20/2023 | Ký thành công → **Bước 4.2** | Sai OTP ≥5 lần: Popup `[ERR_SIGN_003]` khóa 24h | Pass: `EVT_LEND_ESIGN_OK`<br>Fail: `EVT_LEND_ESIGN_LOCKED_24H` |
+| **4.2**<br>BPM Approval | Hệ thống | Gửi hồ sơ sang BPM Ops xét duyệt tự động | Auto-rule engine xét duyệt | Xử lý ≤ 5 giây + APPROVED → **Bước 4.3** | PENDING (>5s): điều hướng màn theo dõi hồ sơ.<br>REJECTED: Popup `[ERR_LEND_004]` hướng dẫn liên hệ Hotline | Pass: `EVT_LEND_BPM_APPROVED`<br>Pending: `EVT_LEND_BPM_PENDING`<br>Fail: `EVT_LEND_BPM_REJECTED` |
+| **4.3**<br>Show Result | Khách hàng | KH xem màn tiếp nhận hạn mức + đề xuất phát hành thẻ | Cross-sell flow | Kết thúc luồng cấp hạn mức → chuyển luồng phát hành thẻ | — | Pass: `EVT_LEND_FLOW_COMPLETED` |
+
+---
 
 ### 5.2. Chốt Chặn Kiểm Tra Logic Cho Luồng Thanh Toán Dịch Vụ (Utility Payments Validation Rules)
+
+> **Cross-cutting Rules:** Áp dụng cho mọi giao dịch thanh toán hóa đơn / nạp tiền dịch vụ. Một số rule được kiểm tra ngầm tại các sub-step trong matrix Payment riêng (không tích hợp vào matrix Lending ở 5.1).
+
 Khi khách hàng thực hiện khởi tạo yêu cầu thanh toán hóa đơn hoặc nạp tiền dịch vụ (Billing Topup), hệ thống bắt buộc phải kiểm tra qua các điều kiện sau:
-1.  **Gói IBMB Khách hàng đang sử dụng**:
-    *   Kiểm tra gói dịch vụ có bị chặn tính năng thanh toán trực tuyến không.
-2.  **Tài khoản thanh toán (TKTT) nguồn**:
-    *   Trạng thái TKTT phải là hoạt động (`Active`).
-    *   Số dư khả dụng trong tài khoản phải lớn hơn hoặc bằng Số tiền giao dịch + Phí giao dịch (nếu có).
-3.  **Tính hợp lệ của Mã hóa đơn / Mã khách hàng**:
-    *   Gửi lệnh truy vấn sang đối tác nhà cung cấp dịch vụ để lấy thông tin hóa đơn nợ cước.
-    *   Hệ thống kiểm tra nếu hóa đơn đã được thanh toán trước đó -> Báo lỗi hóa đơn đã được thanh toán.
-4.  **Hạn mức xác thực sinh trắc học theo quy định Nhà nước**:
-    *   Nếu Số tiền giao dịch $> 10,000,000$ VND/lần hoặc Tổng hạn mức giao dịch trong ngày $> 20,000,000$ VND -> Bắt buộc kích hoạt camera xác thực khuôn mặt sinh trắc học (Face Authen) trước khi hiển thị màn hình nhập OTP.
+
+1.  **Gói IBMB Khách hàng đang sử dụng**: Kiểm tra gói dịch vụ có bị chặn tính năng thanh toán trực tuyến không.
+2.  **Tài khoản thanh toán (TKTT) nguồn**: Trạng thái TKTT phải là `Active`; số dư khả dụng ≥ Số tiền GD + Phí GD.
+3.  **Tính hợp lệ của Mã hóa đơn / Mã khách hàng**: Truy vấn đối tác lấy thông tin nợ cước; nếu hóa đơn đã thanh toán → báo lỗi.
+4.  **Hạn mức xác thực sinh trắc học theo QĐ 2345**: Số tiền GD > 10,000,000 VND/lần hoặc tổng hạn mức GD/ngày > 20,000,000 VND → bắt buộc Face Authen trước khi nhập OTP.
 
 ---
 

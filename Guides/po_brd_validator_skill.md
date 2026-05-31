@@ -60,15 +60,17 @@ Khi skill được kích hoạt, Agent **PHẢI đọc** tài liệu sau để c
 | **V4** | User Story nhất quán | User Story ở Section 3 khớp với phần mô tả tổng quan? | Đồng bộ lại |
 | **V5** | Scope nhất quán | In/Out-of-Scope rõ ràng, không có nội dung vượt scope trong Matrix Table? | Đồng bộ lại |
 
-#### NHÓM B: MA TRẬN PO — MATRIX TABLE (5 tiêu chí)
+#### NHÓM B: SUB-STEP + BRANCHING MATRIX (5 tiêu chí)
+
+> Pattern chuẩn: mỗi bước cha là 1 bảng nhỏ, sub-step xếp thành row với **7 cột** (Sub-step / PIC / Thao tác / Logic / Pass → / Fail → / Mã sự kiện log). Tham chiếu cẩm nang Section IV.
 
 | STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
 | :---: | :--- | :--- | :--- |
 | **V6** | Không placeholder trống | Còn ô nào ghi `[TBD]`, `...` hoặc để trống? | Điền nội dung cụ thể |
-| **V7** | Đủ 3 cột chuẩn | Mỗi bước có: Thao tác người dùng / Logic & Business Rules / Kết quả & Chuyển bước? | Bổ sung cột thiếu |
-| **V8** | Happy Path hoàn chỉnh | Luồng chính liên tục từ Entry Point → Success End State? Có bước nhảy cóc? | Bổ sung bước thiếu |
-| **V9** | Exception Path đầy đủ | Mỗi Business Rule đã mô tả cả trường hợp FAIL (popup / chặn / retry)? | Bổ sung nhánh Exception |
-| **V10** | System Check Checklists | Đã có: ① Root/Jailbreak ② Batch Time ③ OTP retry limits ④ Velocity Limits ⑤ Face Authen (QĐ 2345)? | Bổ sung theo `po_writing_guide_for_ai_agents.md` |
+| **V7** | Đủ 7 cột chuẩn + sub-step `X.Y` | Mỗi sub-step có đủ: Sub-step (đánh số X.Y) / PIC / Thao tác / Logic / Pass / Fail / Mã sự kiện log? | Bổ sung cột thiếu + đánh số lại theo X.Y |
+| **V8** | Happy Path hoàn chỉnh | Cell "Pass →" của mọi sub-step nối thành chuỗi liên tục từ Entry Point → Success End State? Không nhảy cóc? | Bổ sung sub-step thiếu trong chuỗi pass |
+| **V9** | Pass/Fail branching tường minh | Mỗi sub-step có cell Pass riêng + cell Fail riêng? Cell Fail nêu rõ popup ID / dừng luồng / retry? | Tách Pass/Fail thành 2 cell, gắn popup ID hoặc action cụ thể |
+| **V10** | Runtime check inline + Mã log đúng convention | (a) 5 runtime check (Root/Jailbreak, Batch Time, OTP Retry, Velocity, Face Authen QĐ 2345) NẾU CÓ phải inline vào matrix tại đúng sub-step — KHÔNG tách ra Section "Business Rules bổ sung". (b) Mỗi sub-step có Mã sự kiện log theo format `EVT_<MODULE>_<ACTION>_<RESULT>`? | (a) Move runtime rule từ Section 5.2 vào matrix sub-step tương ứng. (b) Bổ sung Mã log theo convention; Section 5.2 chỉ chứa design-time / cross-cutting / post-issuance rule |
 
 #### NHÓM C: UI COPY & POPUP (3 tiêu chí)
 

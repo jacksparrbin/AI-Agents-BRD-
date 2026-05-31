@@ -150,21 +150,39 @@ Dựa trên User Story + Scope đã xác định ở Sub-step 1.2 và 1.3, chọ
 > **QUAN TRỌNG**: Tuyệt đối không được tự ý giả định các nghiệp vụ ngân hàng nhạy cảm (chốt chặn bảo mật, hạn mức giao dịch, điều kiện trùng lặp dữ liệu) khi thông tin chưa rõ ràng.
 
 **Quy tắc đặt câu hỏi:**
-*   Tối đa **1–5 câu hỏi** trong một lượt để tránh gây quá tải.
-*   Dạng trắc nghiệm: chia danh sách số (1, 2, 3) kèm lựa chọn chữ (a, b, c).
-*   **Luôn đề xuất sẵn lựa chọn Khuyên dùng (Recommended)** dựa trên tài liệu thực tế MSB CTB và bôi đậm lựa chọn đó.
-*   Cung cấp cú pháp trả lời nhanh: `defaults` hoặc `1a 2b 3c`.
+*   **BẮT BUỘC dùng tool `AskUserQuestion`** để render câu hỏi dạng card tích chọn trực tiếp trong chat. TUYỆT ĐỐI không in câu hỏi dạng text "1a 2b 3c" buộc Stakeholder gõ tay.
+*   Tối đa **1–4 câu hỏi** trong một lượt gọi tool (giới hạn cứng của tool).
+*   Mỗi câu hỏi có **2–4 option**. Tool tự động bổ sung option **"Other"** để Stakeholder nhập câu trả lời tùy ý → KHÔNG cần thêm option "Lựa chọn khác" thủ công.
+*   **Option Recommended đặt ở vị trí đầu tiên**, label kết thúc bằng "(Recommended)". Mỗi option có `label` (≤ 5 chữ, hiển thị) + `description` (giải thích trade-off/hệ quả).
+*   Mỗi câu hỏi có `header` (chip ≤ 12 ký tự, VD: "Đối tượng", "Hạn mức GD", "Xác thực").
+*   Dùng `multiSelect: true` khi câu hỏi cho phép chọn nhiều đáp án (VD: chọn nhiều phân hệ ảnh hưởng). Mặc định `multiSelect: false`.
+*   KHÔNG cần hướng dẫn cú pháp trả lời nhanh — Stakeholder tích trực tiếp trên UI.
 
 **Vòng lặp xác nhận bắt buộc (Mandatory Feedback Loop):**
 
 > **Tuyệt đối không được tự động sinh tài liệu ngay sau khi nhận câu trả lời.**
 
-Sau khi Stakeholder trả lời, Agent **bắt buộc** hỏi câu chốt chặn:
-> *"Cảm ơn anh/chị. Em đã ghi nhận các phương án lựa chọn trên. Trước khi em tiến hành biên soạn đặc tả BRD chi tiết, anh/chị có cần chỉnh sửa, bổ sung hoặc thêm mới thông tin đầu vào nào nữa không?"*
+Sau khi Stakeholder trả lời các câu hỏi gap, Agent **bắt buộc** gọi `AskUserQuestion` với câu chốt chặn dạng tích chọn:
+
+```json
+{
+  "questions": [{
+    "question": "Cảm ơn anh/chị. Em đã ghi nhận các phương án lựa chọn trên. Trước khi em tiến hành biên soạn đặc tả BRD chi tiết, anh/chị có cần chỉnh sửa, bổ sung hoặc thêm mới thông tin đầu vào nào nữa không?",
+    "header": "Xác nhận đầu vào",
+    "multiSelect": false,
+    "options": [
+      {"label": "Không, tiến hành viết BRD (Recommended)", "description": "Đã đủ thông tin, chuyển sang Phase 3 biên soạn BRD."},
+      {"label": "Có, em muốn bổ sung", "description": "Quay lại Phase 1 cập nhật phân tích và hỏi tiếp."}
+    ]
+  }]
+}
+```
+
+Tool tự thêm option **"Other"** để Stakeholder nhập nội dung bổ sung tùy ý.
 
 **Routing Logic:**
-1.  **"Không / Tiến hành làm tài liệu"** → Xác nhận hoàn tất → Chuyển **Phase 3**.
-2.  **"Có" / bổ sung thêm** → Quay lại **Phase 1** (cập nhật phân tích, rà soát gap, hỏi tiếp nếu cần). Lặp cho tới khi Stakeholder khẳng định không còn bổ sung.
+1.  Tích **"Không, tiến hành viết BRD"** → Xác nhận hoàn tất → Chuyển **Phase 3**.
+2.  Tích **"Có, em muốn bổ sung"** HOẶC nhập nội dung tự do qua "Other" → Quay lại **Phase 1** (cập nhật phân tích, rà soát gap, hỏi tiếp nếu cần). Lặp cho tới khi Stakeholder khẳng định không còn bổ sung.
 
 ---
 
@@ -197,25 +215,44 @@ Sau khi Phase 3 hoàn tất, Agent 1 **PHẢI**:
 
 ## Ví dụ câu hỏi làm rõ nghiệp vụ (Phase 2 Template)
 
-Khi Stakeholder yêu cầu một tính năng (VD: *"Thêm chức năng rút tiền bằng mã QR tại ATM trên Mobile App"*), Agent phản hồi:
+Khi Stakeholder yêu cầu một tính năng (VD: *"Thêm chức năng rút tiền bằng mã QR tại ATM trên Mobile App"*), Agent gọi tool `AskUserQuestion` với spec sau:
 
-```text
-Chào anh/chị, để em tiến hành đặc tả BRD chuẩn cho tính năng "Rút tiền bằng QR tại ATM", em cần làm rõ:
-
-1) Đối tượng áp dụng tính năng rút tiền bằng QR?
-a) Chỉ KH đã mở thẻ vật lý hoạt động (ETB Cardholders) — (Recommended)
-b) Cả KH mở tài khoản trực tuyến chưa có thẻ vật lý (Cardless)
-c) Lựa chọn khác: <chi tiết>
-
-2) Hạn mức giao dịch rút tiền bằng QR?
-a) Áp dụng chung hạn mức thẻ vật lý hiện tại (mặc định)
-b) Gói riêng tối đa 10,000,000 VND/lần và 50,000,000 VND/ngày
-c) Lựa chọn khác: <chi tiết>
-
-3) Phương thức xác thực sinh trắc học?
-a) Dưới 10tr dùng SMS/Smart OTP; trên 10tr bắt buộc Face Authen — (Recommended theo QĐ NHNN)
-b) Bắt buộc Face Authen mọi giao dịch bất kể số tiền
-c) Lựa chọn khác: <chi tiết>
-
-Phản hồi nhanh: defaults (chọn tất cả Recommended) hoặc soạn: 1a 2b 3a.
+```json
+{
+  "questions": [
+    {
+      "question": "Đối tượng áp dụng tính năng rút tiền bằng QR?",
+      "header": "Đối tượng",
+      "multiSelect": false,
+      "options": [
+        {"label": "Chỉ KH ETB có thẻ vật lý (Recommended)", "description": "Áp dụng cho khách hàng hiện hữu đã mở thẻ vật lý đang hoạt động — đơn giản về định danh."},
+        {"label": "Cả KH Cardless", "description": "Bao gồm KH mở tài khoản trực tuyến chưa có thẻ vật lý — phức tạp hơn về định danh và rủi ro."}
+      ]
+    },
+    {
+      "question": "Hạn mức giao dịch rút tiền bằng QR?",
+      "header": "Hạn mức GD",
+      "multiSelect": false,
+      "options": [
+        {"label": "Theo hạn mức thẻ vật lý hiện tại (Recommended)", "description": "Tận dụng cấu hình hạn mức ATM đã có, không cần tạo gói riêng."},
+        {"label": "Gói riêng 10tr/lần — 50tr/ngày", "description": "Đặt hạn mức chuyên biệt cho kênh QR ATM, cần cấu hình mới trên T24/DBS."}
+      ]
+    },
+    {
+      "question": "Phương thức xác thực sinh trắc học?",
+      "header": "Xác thực",
+      "multiSelect": false,
+      "options": [
+        {"label": "<10tr OTP, ≥10tr Face Authen (Recommended)", "description": "Tuân thủ QĐ 2345/QĐ-NHNN — phân ngưỡng theo số tiền giao dịch."},
+        {"label": "Face Authen mọi giao dịch", "description": "Áp dụng sinh trắc học bắt buộc 100% — an toàn cao hơn nhưng có thể giảm conversion."}
+      ]
+    }
+  ]
+}
 ```
+
+Tool sẽ render 3 card tích chọn liên tiếp trong chat. Stakeholder có thể:
+- Tích option có sẵn ở mỗi câu, HOẶC
+- Chọn **"Other"** và nhập câu trả lời tùy ý cho từng câu.
+
+Sau khi nhận đủ phản hồi, Agent tiếp tục với **vòng lặp xác nhận bắt buộc** ở Phase 2 (gọi `AskUserQuestion` lần nữa với câu chốt Có/Không).
