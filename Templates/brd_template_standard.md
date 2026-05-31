@@ -1,6 +1,6 @@
 # [TÊN DỰ ÁN / TÊN HÀNH TRÌNH]
 ## TÀI LIỆU YÊU CẦU NGHIỆP VỤ (BUSINESS REQUIREMENT DOCUMENT - BRD)
-**Mã tài liệu:** DCTBR-[J-XXXX] BRD [Tên tính năng]  
+**Mã tài liệu:** BRD-[J-XXXX] [Tên tính năng]  
 **Phiên bản:** Ver X.X  
 **Ngày cập nhật:** DD/MM/YYYY  
 **Trạng thái:** [Draft / Under Review / Released]

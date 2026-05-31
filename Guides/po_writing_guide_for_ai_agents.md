@@ -1,13 +1,13 @@
-# CẨM NANG QUY HOẠCH & VIẾT TÀI LIỆU BRD DÀNH CHO PO & AI AGENTS (MSB CTB STANDARD)
+# CẨM NANG QUY HOẠCH & VIẾT TÀI LIỆU BRD DÀNH CHO PO & AI AGENTS (Digital Banking Standard)
 
-Tài liệu này đóng vai trò là **"Requirement Skill"** chuẩn hóa dành cho Product Owner (PO) và các AI Agents thế hệ tiếp theo. Hướng dẫn này đúc kết toàn bộ phương pháp quy hoạch, cấu trúc logic nghiệp vụ, quy chuẩn kỹ thuật và quy tắc hành trình người dùng dựa trên thực tế phân tích 27 bộ tài liệu BRD thuộc dự án MSB CTB (Card, Lending, Limit, Onboarding, Payment).
+Tài liệu này đóng vai trò là **"Requirement Skill"** chuẩn hóa dành cho Product Owner (PO) và các AI Agents thế hệ tiếp theo. Hướng dẫn này đúc kết toàn bộ phương pháp quy hoạch, cấu trúc logic nghiệp vụ, quy chuẩn kỹ thuật và quy tắc hành trình người dùng dựa trên thực tế phân tích 27 bộ tài liệu BRD thuộc dự án Digital Banking (Card, Lending, Limit, Onboarding, Payment).
 
 ---
 
 ## I. MỤC TIÊU & VAI TRÒ CỦA SẢN PHẨM PO
 Mục tiêu cốt lõi của tài liệu BRD do PO hoặc AI Agent viết ra là **truyền tải trọn vẹn, chính xác, không mơ hồ** các yêu cầu nghiệp vụ từ Stakeholders (Đơn vị Kinh doanh, Vận hành, Pháp chế) tới Đội ngũ Phát triển (Dev, QA/QC, Solution Architect).
 
-Một BRD chuẩn MSB CTB **KHÔNG** chỉ mô tả luồng UI/UX tĩnh, mà bắt buộc phải mô tả chi tiết:
+Một BRD chuẩn Digital Banking **KHÔNG** chỉ mô tả luồng UI/UX tĩnh, mà bắt buộc phải mô tả chi tiết:
 1. **As-is (Hiện trạng) vs To-be (Luồng mong muốn)**.
 2. **Logic hệ thống (System Business Rules)**: các điều kiện kiểm tra ngầm (back-end validation), tham chiếu bảng mã lỗi, hạn mức và phân loại khách hàng.
 3. **UI Copy & Popup Standard**: viết rõ nội dung text của từng màn hình thông báo, tiêu đề, nội dung mô tả chi tiết và các nút hành động (CTA).
@@ -134,7 +134,7 @@ Tiêu chí tự kiểm tra: nếu rule có thể chỉ rõ "rule này được k
 
 ## V. QUY CHUẨN VIẾT UI COPY & POPUP THÔNG BÁO LỖI
 Một lỗi rất phổ biến của PO là chỉ viết: *"Hệ thống báo lỗi cho khách hàng"*. 
-**Quy chuẩn MSB CTB yêu cầu viết rõ chính xác nội dung hiển thị**:
+**Quy chuẩn Digital Banking yêu cầu viết rõ chính xác nội dung hiển thị**:
 
 ### Cấu trúc chuẩn của một đặc tả Thông báo (Notification / Popup Spec):
 1.  **Title (Tiêu đề)**: Ngắn gọn, nêu bật bản chất sự việc (Ví dụ: `Thiết bị không đạt điều kiện`, `Mã OTP hết hiệu lực`).

@@ -1,12 +1,12 @@
 ---
 name: po-brd-validator
-description: "Kiểm tra chất lượng tài liệu BRD ngân hàng số MSB CTB theo 20-point checklist. Skill đóng vai QA Validator Agent độc lập, nhận BRD draft từ Agent po-brd-creator và đánh giá khách quan trước khi xuất bản. Dùng khi user nói: \"validate BRD\", \"kiểm tra BRD\", \"review tài liệu BRD\", \"chấm điểm BRD\", \"đánh giá chất lượng BRD\", \"check BRD\", \"rà soát BRD\", \"BRD này ổn chưa\", \"xem BRD có đạt không\", hoặc khi user paste/đính kèm file BRD .md và muốn kiểm tra chất lượng. KHÔNG dùng cho: viết BRD mới (dùng po-brd-creator), tạo UAT test cases (dùng po-uat-generator), review code, review PRD/URD."
+description: "Kiểm tra chất lượng tài liệu BRD ngân hàng số Digital Banking theo 20-point checklist. Skill đóng vai QA Validator Agent độc lập, nhận BRD draft từ Agent po-brd-creator và đánh giá khách quan trước khi xuất bản. Dùng khi user nói: \"validate BRD\", \"kiểm tra BRD\", \"review tài liệu BRD\", \"chấm điểm BRD\", \"đánh giá chất lượng BRD\", \"check BRD\", \"rà soát BRD\", \"BRD này ổn chưa\", \"xem BRD có đạt không\", hoặc khi user paste/đính kèm file BRD .md và muốn kiểm tra chất lượng. KHÔNG dùng cho: viết BRD mới (dùng po-brd-creator), tạo UAT test cases (dùng po-uat-generator), review code, review PRD/URD."
 author: Bình Nguyễn Thanh
 ---
 
 # PO BRD Validator — Independent QA Validator Agent
 
-Skill này biến Claude thành một **QA Validator Agent** độc lập, chuyên kiểm tra chất lượng tài liệu BRD ngân hàng số MSB CTB. Agent nhận BRD draft từ Agent 1 (po-brd-creator) và thực hiện đánh giá khách quan theo 20-point checklist mà KHÔNG có bias từ quá trình drafting.
+Skill này biến Claude thành một **QA Validator Agent** độc lập, chuyên kiểm tra chất lượng tài liệu BRD ngân hàng số Digital Banking. Agent nhận BRD draft từ Agent 1 (po-brd-creator) và thực hiện đánh giá khách quan theo 20-point checklist mà KHÔNG có bias từ quá trình drafting.
 
 ## Kiến trúc Multi-Agent
 
@@ -54,7 +54,7 @@ Khi skill được kích hoạt, Agent **PHẢI đọc** tài liệu sau để c
 
 | STT | Tiêu chí | Câu hỏi kiểm tra | Nếu FAIL |
 | :---: | :--- | :--- | :--- |
-| **V1** | Metadata đầy đủ | Mã tài liệu, Phân hệ, Phiên bản, Ngày, Trạng thái đã điền đủ? | Bổ sung theo chuẩn `DCTBR-[Mã] BRD [Tên]-[Ngày].md` |
+| **V1** | Metadata đầy đủ | Mã tài liệu, Phân hệ, Phiên bản, Ngày, Trạng thái đã điền đủ? | Bổ sung theo chuẩn `BRD-[Mã] [Tên]-[Ngày].md` |
 | **V2** | Lịch sử thay đổi | Bảng Change Log có phiên bản, người thực hiện, người phê duyệt, mô tả (A/M/D)? | Bổ sung dòng phiên bản hiện tại |
 | **V3** | Glossary đầy đủ | Tất cả thuật ngữ viết tắt trong BRD đã được định nghĩa trong bảng Glossary? | Quét BRD, bổ sung từ viết tắt còn thiếu |
 | **V4** | User Story nhất quán | User Story ở Section 3 khớp với phần mô tả tổng quan? | Đồng bộ lại |

@@ -1,12 +1,12 @@
 ---
 name: po-brd-creator
-description: "Sinh tài liệu Đặc tả Yêu cầu Nghiệp vụ (BRD) chuẩn ngân hàng số MSB CTB. Skill đóng vai Senior Product Owner AI Agent, tiếp nhận yêu cầu sơ khai từ Stakeholder và chuyển đổi thành BRD chất lượng cao dạng Markdown với đầy đủ User Story INVEST, Matrix Table, UI Copy/Popup, sơ đồ Mermaid, và Data Mapping. Dùng khi user nói: \"viết BRD\", \"tạo tài liệu nghiệp vụ\", \"đặc tả yêu cầu\", \"viết tài liệu cho tính năng\", \"BRD cho chức năng\", \"tạo BRD ngân hàng\", \"viết spec cho feature\", \"phân tích nghiệp vụ\", \"business requirement\", \"tài liệu yêu cầu\", \"đặc tả tính năng mới\", \"viết document cho dev\", hoặc khi user mô tả một tính năng ngân hàng số và muốn tạo tài liệu đặc tả. Cũng kích hoạt khi user paste mô tả tính năng + nói \"viết BRD đi\", \"làm tài liệu cho cái này\", \"đặc tả giúp em\". KHÔNG dùng cho: viết User Story đơn lẻ (dùng user-story-ac-writer), viết Use Case formal (dùng use-case-writer), viết PRD/URD tổng thể, viết test case kỹ thuật, validate BRD (dùng po-brd-validator), tạo UAT test cases (dùng po-uat-generator)."
+description: "Sinh tài liệu Đặc tả Yêu cầu Nghiệp vụ (BRD) chuẩn ngân hàng số Digital Banking. Skill đóng vai Senior Product Owner AI Agent, tiếp nhận yêu cầu sơ khai từ Stakeholder và chuyển đổi thành BRD chất lượng cao dạng Markdown với đầy đủ User Story INVEST, Matrix Table, UI Copy/Popup, sơ đồ Mermaid, và Data Mapping. Dùng khi user nói: \"viết BRD\", \"tạo tài liệu nghiệp vụ\", \"đặc tả yêu cầu\", \"viết tài liệu cho tính năng\", \"BRD cho chức năng\", \"tạo BRD ngân hàng\", \"viết spec cho feature\", \"phân tích nghiệp vụ\", \"business requirement\", \"tài liệu yêu cầu\", \"đặc tả tính năng mới\", \"viết document cho dev\", hoặc khi user mô tả một tính năng ngân hàng số và muốn tạo tài liệu đặc tả. Cũng kích hoạt khi user paste mô tả tính năng + nói \"viết BRD đi\", \"làm tài liệu cho cái này\", \"đặc tả giúp em\". KHÔNG dùng cho: viết User Story đơn lẻ (dùng user-story-ac-writer), viết Use Case formal (dùng use-case-writer), viết PRD/URD tổng thể, viết test case kỹ thuật, validate BRD (dùng po-brd-validator), tạo UAT test cases (dùng po-uat-generator)."
 author: Bình Nguyễn Thanh
 ---
 
 # PO BRD Creator — Senior Banking Product Owner AI Agent
 
-Skill này biến Claude thành một **Senior Product Owner (PO) AI Agent** chuyên nghiệp trong lĩnh vực ngân hàng số. Agent tiếp nhận yêu cầu nghiệp vụ sơ khai từ Stakeholders và chuyển đổi thành tài liệu BRD chất lượng cao, không mơ hồ, tuân thủ quy chuẩn MSB CTB.
+Skill này biến Claude thành một **Senior Product Owner (PO) AI Agent** chuyên nghiệp trong lĩnh vực ngân hàng số. Agent tiếp nhận yêu cầu nghiệp vụ sơ khai từ Stakeholders và chuyển đổi thành tài liệu BRD chất lượng cao, không mơ hồ, tuân thủ quy chuẩn Digital Banking.
 
 Phương pháp luận tích hợp:
 - Kỹ thuật User Story chuẩn **INVEST** từ [ba-zone-user-story-ac-writer](https://github.com/phucnt-bazone-vietnam/ba-zone-user-story-ac-writer) (by Phúc NT · BA Zone)
@@ -40,7 +40,7 @@ Khi skill được kích hoạt, Agent **PHẢI đọc** các tài liệu sau th
    - `Templates/brd_template_standard.md` — cho nghiệp vụ chung
 
 3. **Tài liệu mẫu** (đọc khi cần tham chiếu cách viết):
-   - `Samples/DCTBR-[Daily Banking] [Payment] Quét QR chuyển khoán VietQR.md`
+   - `Samples/BRD-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md`
    - `Samples/sample_brd_atm_qr_withdrawal.md`
 
 > **Context Loading Strategy**: KHÔNG đọc tất cả file cùng lúc. Đọc cẩm nang (1) trước, rồi chỉ đọc template (2) phù hợp sau khi Phase 1 xác định loại nghiệp vụ. Chỉ đọc samples (3) khi cần tham chiếu cụ thể.
@@ -190,7 +190,7 @@ Tool tự thêm option **"Other"** để Stakeholder nhập nội dung bổ sung
 
 Sau khi Stakeholder hoàn tất vòng lặp xác nhận đầu vào ở Phase 2:
 
-1.  Tạo tài liệu BRD mới dạng Markdown đặt tên: `DCTBR-[Mã phân hệ] BRD [Tên tính năng]-[Ngày viết].md`.
+1.  Tạo tài liệu BRD mới dạng Markdown đặt tên: `BRD-[Mã phân hệ] [Tên tính năng]-[Ngày viết].md`.
 2.  Sử dụng tệp template đã chọn ở Phase 1.
 3.  **Chi tiết hóa luồng nghiệp vụ (The Matrix Table)**:
     *   Tuyệt đối không được dùng placeholders trống.
@@ -206,7 +206,7 @@ Sau khi Stakeholder hoàn tất vòng lặp xác nhận đầu vào ở Phase 2:
 
 Sau khi Phase 3 hoàn tất, Agent 1 **PHẢI**:
 
-1.  **Lưu file BRD** với tên chuẩn: `DCTBR-[Mã phân hệ] BRD [Tên tính năng]-[Ngày viết].md`
+1.  **Lưu file BRD** với tên chuẩn: `BRD-[Mã phân hệ] [Tên tính năng]-[Ngày viết].md`
 2.  **Thông báo cho Stakeholder**:
     > *"Em đã hoàn thành bản thảo BRD. Bước tiếp theo, anh/chị hãy chuyển file BRD này cho Agent **po-brd-validator** để kiểm tra chất lượng 20 tiêu chí trước khi xuất bản chính thức."*
 3.  **KHÔNG tự validate** — việc kiểm tra 20-point checklist thuộc trách nhiệm của Agent 2 (po-brd-validator) để đảm bảo đánh giá độc lập, khách quan.

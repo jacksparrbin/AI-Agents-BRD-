@@ -1,8 +1,8 @@
 # TÀI LIỆU YÊU CẦU NGHIỆP VỤ (BUSINESS REQUIREMENT DOCUMENT - BRD)
 ## HÀNH TRÌNH TÙY CHỌN ẢNH HIỂN THỊ THẺ TÍN DỤNG KHI KHÁCH HÀNG ĐĂNG KÝ MỚI (PERSONALIZED CARD ART SELECTION)
-**Mã tài liệu:** DCTBR-[CARD-008] BRD Personalized Card Art Selection  
+**Mã tài liệu:** BRD-[CARD-008] Personalized Card Art Selection  
 **Phân hệ:** Card Issuance - Onboarding  
-**Phiên bản:** Ver 1.2  
+**Phiên bản:** Ver 1.1  
 **Ngày cập nhật:** 31/05/2026  
 **Trạng thái:** Draft
 
@@ -16,7 +16,6 @@ Bảng ghi nhận toàn bộ quá trình cập nhật, chỉnh sửa nội dung 
 | :--- | :--- | :--- | :--- | :--- |
 | Ver 1.0 | 31/05/2026 | AI Senior PO Agent | Stakeholder | **[NEW]** Khởi tạo tài liệu đặc tả yêu cầu nghiệp vụ cho tính năng tùy chọn ảnh hiển thị (Card Art) của thẻ tín dụng khi đăng ký mới trực tuyến. |
 | Ver 1.1 | 31/05/2026 | AI Senior PO Agent | Stakeholder | **[MODIFY]** Cập nhật toàn diện dựa trên phản hồi của QA Validator (Agent 2):<br>- Bổ sung đầy đủ 9 thuật ngữ mới vào bảng Glossary (Section 2).<br>- Tích hợp các chốt chặn ngầm bắt buộc (Face Authen QĐ 2345, Batch Time Check, OTP limits, Velocity Limits) vào Matrix Table (Section 5.1) và Business Rules (Section 5.2).<br>- Chuẩn hóa định dạng mã lỗi các Popup thông báo về chuẩn `[ERR_CARD_XXX]` (Section 6).<br>- Bổ sung thêm Section 10 "Tài liệu tham chiếu" hoàn chỉnh. |
-| Ver 1.2 | 31/05/2026 | AI Senior PO Agent | Stakeholder | **[MODIFY]** Refactor Section 5+6 theo pattern "Sub-step + Branching Matrix":<br>- **Section 5.1:** Mở rộng từ 5 bước flat → 11 sub-step (1.1 → 5.2), bố cục 5 bảng nhỏ theo bước cha; mỗi sub-step là 1 row với 7 cột (Sub-step / PIC / Thao tác / Logic / Pass / Fail / Mã sự kiện log).<br>- Tích hợp 4 runtime check (Batch Time, Face Authen, OTP Retry, API Core Card) trực tiếp vào matrix tại Bước 4.1-4.4.<br>- Bổ sung naming convention Mã sự kiện log `EVT_<MODULE>_<ACTION>_<RESULT>` để Dev/Ops đối soát.<br>- **Section 5.2:** Giảm từ 8 rule → 4 rule (chỉ giữ design-time + cross-cutting + post-issuance). Runtime check đã inline vào matrix.<br>- **Section 6:** Bổ sung 3 popup mới `[ERR_CARD_010]` Batch maintenance, `[ERR_CARD_011]` Face mismatch lock, `[ERR_CARD_012]` OTP locked 24h. |
 
 ---
 
@@ -123,68 +122,45 @@ sequenceDiagram
 
 ### 5.1. Bảng Chi Tiết Hành Trình Đăng Ký và Chọn Card Art (To-be Journey Matrix)
 
-> **Pattern: Sub-step + Branching Matrix.** Mỗi bước cha được bẻ thành các sub-step (X.Y) trình bày dưới dạng row, với 7 cột attribute. Mỗi sub-step có Pass/Fail branching rõ ràng kèm Mã sự kiện log (`EVT_<MODULE>_<ACTION>_<RESULT>`) để Dev/Ops đối soát.
-
-#### Bước 1: Khởi tạo & Tải thư viện Card Art
-
-| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1.1**<br>Load Card Art Gallery | Hệ thống | KH chọn dòng thẻ (VD: JCB, Visa Signature) và bấm `[Tiếp tục]`. DBS gọi API `/api/v1/card/art-gallery` | DBS nhận `card_product_code` + `customer_segment` từ CIF (Mass/Priority), lọc danh sách Card Art khả dụng theo dòng thẻ + segment | Trả về danh sách Card Art hợp lệ → hiển thị màn "Diện mạo thẻ của riêng bạn" → **Bước 2.1** | API timeout/lỗi → Popup `[ERR_CARD_009]` (Thử lại/Hotline) | Pass: `EVT_CARD_GALLERY_LOADED`<br>Fail: `EVT_CARD_GALLERY_API_ERROR` |
-
-#### Bước 2: Khách hàng duyệt & chọn thiết kế Card Art
-
-| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **2.1**<br>Duyệt thư viện + chọn mẫu | Khách hàng | Vuốt duyệt thư viện theo chủ đề (GenZ, Tối giản, VIP...), chạm chọn mẫu ưng ý | **Segment Check:** Nếu KH Mass chạm mẫu thuộc bộ "Signature & Priority" → khóa mờ + chặn chọn | KH chọn mẫu hợp lệ → render mô phỏng 3D mặt trước thẻ + tên KH in chìm góc trái → **Bước 2.2** | KH Mass chạm mẫu VIP → khóa mờ + Popup `[ERR_CARD_002]` "Bộ sưu tập đặc quyền" → quay lại 2.1 | Pass: `EVT_CARD_ART_SELECTED`<br>Fail: `EVT_CARD_SEGMENT_DENIED` |
-| **2.2**<br>Lưu `card_art_id` vào draft | Hệ thống | DBS ghi nhận giá trị `card_art_id` được chọn vào draft application | Lưu vào draft đăng ký + enable nút `[Xác nhận thiết kế]` (Enable button) | → **Bước 3.1** | — | Pass: `EVT_CARD_ART_DRAFT_SAVED` |
-
-#### Bước 3: Xác nhận thiết kế & lưu vết drop-off
-
-| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **3.1**<br>Confirm Design | Khách hàng | KH bấm `[Xác nhận thiết kế]` để đi tiếp hành trình | Lưu vết drop-off recovery 15 ngày kèm `card_art_id` (cho phép khôi phục khi rớt luồng các bước sau) | Sang màn "Nhập địa chỉ nhận thẻ vật lý + cài đặt thẻ" → **Bước 4.1** | KH thoát giữa chừng → auto-save draft → KH quay lại trong 15 ngày → khôi phục hành trình từ Bước 3.1 với `card_art_id` đã chọn | Pass: `EVT_CARD_DESIGN_CONFIRMED`<br>Fail: `EVT_CARD_DROPOFF_SAVED` |
-
-#### Bước 4: Hoàn tất hồ sơ & ký số phát hành thẻ
-
-| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **4.1**<br>Batch Time Check | Hệ thống | So sánh server time với cửa sổ batch 22h00 - 01h00 trước khi nhận hồ sơ ký số | KH ký số trong batch window → chặn giao dịch (Core Banking & Core Card đang chạy đối soát/batch cuối ngày) | Ngoài cửa sổ batch → **Bước 4.2** | Trong cửa sổ batch → Popup `[ERR_CARD_010]` "Hệ thống bảo trì" + lưu draft tạm + nhắc KH retry sau 01h00 | Pass: `EVT_CARD_BATCH_OK`<br>Fail: `EVT_CARD_BATCH_BLOCKED` |
-| **4.2**<br>Face Authen (QĐ 2345) | Khách hàng | Chụp ảnh khuôn mặt live (liveness detection) so khớp chip CCCD (qua NFC) hoặc dữ liệu VNeID | Tuân thủ Quyết định 2345/QĐ-NHNN, đếm số lần mismatch trong phiên | Match → **Bước 4.3** | Mismatch < 3 lần: cho retry tại chỗ.<br>Mismatch ≥ 3 lần: dừng luồng + Popup `[ERR_CARD_011]` hướng dẫn ra quầy/Hotline | Pass: `EVT_CARD_FACE_MATCH`<br>Fail: `EVT_CARD_FACE_RETRY`<br>Fail (lock): `EVT_CARD_FACE_MISMATCH_LOCK` |
-| **4.3**<br>OTP Verify | Khách hàng | Nhập OTP SMS hoặc Smart OTP để ký số hợp đồng phát hành thẻ | Đếm số lần nhập sai liên tiếp + đếm số lần resend trong 1 phiên giao dịch | OTP đúng → **Bước 4.4** | Sai liên tiếp ≥ 5 lần: khóa giao dịch 24h + Popup `[ERR_CARD_012]`.<br>Resend OTP > 3 lần: auto drop-off 15 ngày | Pass: `EVT_CARD_OTP_VERIFIED`<br>Fail: `EVT_CARD_OTP_LOCKED_24H`<br>Fail: `EVT_CARD_OTP_RESEND_EXCEEDED` |
-| **4.4**<br>API Core Card | Hệ thống | Gọi API `/api/v1/card/issue-online` qua DIP → Core Card phát hành PAN | Core Card đồng bộ `card_art_id` ↔ PAN mới phát hành, trả `response_code` | `response_code = 00` → **Bước 4.5** | Timeout / lỗi kết nối → Popup `[ERR_CARD_009]` (Thử lại / Hotline) | Pass: `EVT_CARD_ISSUE_SUCCESS`<br>Fail: `EVT_CARD_ISSUE_API_ERROR` |
-| **4.5**<br>Activate Digital Card | Hệ thống | Kích hoạt Instant Digital Card + apply Velocity Limit 50,000,000 VND/ngày cho thẻ ảo | Hạn mức tạm cho thẻ ảo đến khi KH kích hoạt thẻ vật lý (giảm rủi ro gian lận online sau phát hành) | Hiển thị màn "Mở thẻ thành công" + In-app Noti → **Bước 5.1** | — | Pass: `EVT_CARD_DIGITAL_ACTIVATED` |
-
-#### Bước 5: Sử dụng thẻ ảo & In thẻ vật lý
-
-| Sub-step | PIC | Thao tác / Check | Logic Business Rule | Pass → | Fail → | Mã sự kiện log |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **5.1**<br>Xem thẻ ảo + link Apple Pay | Khách hàng | Vào màn `[Quản lý thẻ]` xem thẻ ảo, liên kết Apple Pay, sao chép thông tin thẻ | Hiển thị thẻ ảo đúng `card_art_id` đã chọn ở 2.1; cho phép xem chi tiết PAN/CVV sau khi KH xác thực OTP | KH dùng được thẻ ảo ngay lập tức → **Bước 5.2** (tự động đóng luồng đăng ký online) | — | Pass: `EVT_CARD_VIRTUAL_VIEWED` |
-| **5.2**<br>Send Print Order to CPS | Hệ thống | DBS gửi lệnh in thẻ vật lý cá nhân hóa sang CPS | Đẩy `card_art_id` + `embossed_name` + `delivery_address` sang CPS; máy in nhận diện in Card Art mặt trước + Full Back-side Printing | Lệnh in được CPS tiếp nhận → chuyển phát thẻ tới KH 3-5 ngày → SMS thông báo khi giao thành công | — | Pass: `EVT_CARD_CPS_PRINT_QUEUED` |
+| Bước | PIC | Thao tác người dùng | Logic & Kiểm tra hệ thống (Business Rules) | Kết quả & Chuyển bước (Next Action) |
+| :---: | :--- | :--- | :--- | :--- |
+| **1** | Hệ thống | Khách hàng hoàn tất bước chọn Dòng sản phẩm thẻ (ví dụ: Thẻ JCB, Visa Signature...) và bấm `[Tiếp tục]`. | 1. Hệ thống DBS nhận diện mã dòng thẻ và thông tin phân khúc khách hàng của CIF hiện tại (Khách hàng thông thường - Mass hay Khách hàng VIP - Priority Banking). <br> 2. DBS gửi danh sách các mẫu ảnh thẻ hợp lệ tương ứng về ứng dụng. | Hiển thị màn hình thiết kế thẻ "Diện mạo thẻ của riêng bạn" -> Chuyển sang **Bước 2**. |
+| **2** | Khách hàng | Khách hàng vuốt ngang duyệt qua các bộ sưu tập ảnh thẻ theo chủ đề (Gen Z, Tối giản, VIP...). Khách hàng chạm chọn thiết kế ưng ý. | 1. Hệ thống hiển thị trực quan bản mô phỏng 3D mặt trước thẻ vật lý (Front-side) với hình ảnh được lựa chọn kèm theo Họ và tên của khách hàng in chìm/nổi góc trái phía dưới. <br> 2. **Chốt chặn phân hạng (Segment Check):** Nếu khách hàng Mass cố gắng chọn thiết kế của dòng VIP Priority, hệ thống chặn hiển thị mẫu đó hoặc hiển thị khóa mờ và báo lỗi khi chạm vào [ERR_CARD_002]. | - Chọn mẫu thành công: Hệ thống ghi nhận giá trị `card_art_id` được chọn. Nút `[Xác nhận thiết kế]` được mở khóa (Enable) -> Chuyển sang **Bước 3**. |
+| **3** | Khách hàng | Khách hàng bấm `[Xác nhận thiết kế]` để đi tiếp hành trình. | Hệ thống lưu trữ tạm thời mã `card_art_id` vào thông tin giỏ hàng đăng ký mở thẻ. Lưu vết trạng thái Drop-off để hỗ trợ Khôi phục hành trình trong vòng 15 ngày (nếu rớt luồng ở các bước sau thì khi quay lại vẫn giữ đúng Card Art đã chọn). | Chuyển hướng sang màn hình Xác nhận thông tin địa chỉ nhận thẻ vật lý và cài đặt các tính năng thẻ -> Chuyển sang **Bước 4**. |
+| **4** | Khách hàng | Khách hàng nhập thông tin địa chỉ nhận thẻ vật lý, kiểm tra Điều khoản & Điều kiện (T&C) và ký số bằng Smart OTP/Face Authen. | 1. **Kiểm tra giờ chạy batch (Batch Time Check):** Nếu giao dịch diễn ra từ 22h00 - 01h00 sáng, DBS chặn thực hiện giao dịch và hiển thị popup thông báo bảo trì.<br>2. **Xác thực khuôn mặt sinh trắc học bắt buộc (Face Authen):** Khách hàng chụp ảnh khuôn mặt live để so khớp với chip CCCD/VNeID, tuân thủ nghiêm ngặt Quyết định 2345/QĐ-NHNN.<br>3. **Kiểm tra giới hạn OTP (OTP Limits Check):** Nếu nhập sai OTP liên tiếp $\ge 5$ lần, hệ thống khóa giao dịch mở thẻ trong 24 giờ.<br>4. Gọi API Core Card qua DIP để khởi tạo phát hành thẻ, liên kết mã `card_art_id` với số thẻ mới phát hành (PAN).<br>5. Mở và kích hoạt ngay thẻ ảo (Instant Digital Card) trên ứng dụng, áp dụng hạn mức chi tiêu tạm thời tối đa 50,000,000 VND/ngày cho đến khi kích hoạt thẻ vật lý. | - Phát hành thành công: Hiển thị màn hình thành công kèm ảnh Card Art của thẻ vừa mở -> Chuyển sang **Bước 5**.<br>- Nhập sai OTP $\ge 5$ lần: Khóa luồng trong ngày.<br>- Lỗi kết nối hệ thống: Hiển thị popup báo lỗi [ERR_CARD_009]. |
+| **5** | Khách hàng | Khách hàng truy cập giao diện Quản lý thẻ trên App để sử dụng thẻ ảo. | 1. Hệ thống hiển thị ảnh thẻ ảo trên App khớp chính xác theo thiết kế `card_art_id` đã chọn tại Bước 2. <br> 2. Cho phép khách hàng liên kết thẻ ảo ngay lập tức vào Apple Pay để thanh toán chạm tại cửa hàng hoặc sao chép thông tin thẻ mua sắm online. <br> 3. Tự động đóng luồng đăng ký trực tuyến. | Hệ thống DBS tạo lệnh in thẻ vật lý cá nhân hóa gửi sang Trung tâm in thẻ (CPS). Khách hàng chờ nhận thẻ vật lý tại nhà sau 3 - 5 ngày. |
 
 ---
 
-### 5.2. Các Quy Tắc Nghiệp Vụ Bổ Sung (Design-time, Cross-cutting & Post-issuance Rules)
+### 5.2. Các Quy Tắc Nghiệp Vụ Bổ Sung (System Business Rules & Security Gateways)
 
-> **Lưu ý:** Các runtime check trong luồng đăng ký (Batch Time Check, Face Authen, OTP Retry Limit, Velocity Limit) đã được tích hợp trực tiếp vào Bảng Matrix 5.1 ở các sub-step tương ứng (Bước 4.1 - 4.5). Section này chỉ liệt kê các quy tắc **design-time** (quy chuẩn thiết kế cố định), **cross-cutting** (áp xuyên suốt nhiều luồng) và **post-issuance** (áp dụng sau khi đã phát hành thẻ).
-
-1.  **Quy chuẩn in ấn vật lý (Full Back-side Printing Constraint) — Design-time Rule cho CPS:**
-    *   Mặt trước (Front-side) của phôi thẻ vật lý CHỈ in duy nhất: Hình thiết kế Card Art đã chọn (toàn màn hình thẻ, không viền) và Họ tên khách hàng in chìm/nổi bằng chữ không dấu. KHÔNG in bất cứ thông tin nào khác bao gồm cả Số thẻ tín dụng (PAN), Ngày hết hạn và mã bảo mật (CVV).
+1.  **Quy chuẩn in ấn vật lý (Full Back-side Printing Constraint):**
+    *   Mặt trước (Front-side) của phôi thẻ vật lý chỉ in duy nhất: Hình thiết kế Card Art đã chọn (toàn màn hình thẻ, không viền) và Họ tên khách hàng in chìm/nổi bằng chữ không dấu. Không in bất cứ thông tin nào khác bao gồm cả Số thẻ tín dụng (PAN), Ngày hết hạn và mã bảo mật (CVV).
     *   Mặt sau (Back-side) thẻ bắt buộc chứa đầy đủ: Dải từ, Chip thanh toán, Dải chữ ký khách hàng, và in chìm toàn bộ Số thẻ (16 chữ số), Ngày hết hạn (MM/YY), mã bảo mật CVV (3 chữ số) và Hotline hỗ trợ của ngân hàng.
-
-2.  **Quy tắc khôi phục hành trình rớt luồng (Drop-off Recovery 15 ngày) — Cross-cutting Rule:**
-    *   Khi KH thoát hành trình giữa chừng (bất kỳ Bước 1.1 → 4.5), DBS auto-save draft kèm `card_art_id` và toàn bộ dữ liệu form đã nhập.
-    *   Trong vòng **15 ngày**, KH quay lại → hệ thống tự động khôi phục hành trình từ đúng bước rớt, pre-fill mọi thông tin bao gồm `card_art_id` đã chọn.
-    *   Sau **15 ngày**, draft bị purge tự động, KH phải khởi tạo luồng đăng ký mới từ đầu.
-
-3.  **Quy tắc vòng đời Card Art (Lifecycle & Deprecation Rules) — Post-issuance Rule:**
-    *   Mẫu Card Art trong hệ thống DBS có 2 trạng thái: `ACTIVE` (đang hoạt động) hoặc `DEPRECATED` (ngừng hỗ trợ in vật lý do hết chiến dịch marketing).
-    *   **Thẻ ảo đang hoạt động trên App:** Vẫn giữ nguyên hiển thị Card Art cũ ngay cả khi mẫu đó đã DEPRECATED, đảm bảo cam kết cá nhân hóa với KH.
-    *   **Luồng phát hành lại thẻ vật lý** (Mất / Hỏng / Gia hạn): DBS kiểm tra `card_art_id` của thẻ hiện tại. Nếu DEPRECATED → Popup `[ERR_CARD_001]` yêu cầu KH chọn mẫu `ACTIVE` mới trước khi xác nhận yêu cầu phát hành lại thẻ vật lý.
-
-4.  **Quy tắc đổi thiết kế thẻ (Change Card Art Rules) — Post-issuance Feature:**
-    *   KH có thể thay đổi thiết kế ảnh hiển thị thẻ ảo trên App Digibank bất kỳ lúc nào thông qua menu `[Quản lý thẻ → Đổi thiết kế thẻ]`.
-    *   **Đổi thiết kế thẻ ảo trên App:** Miễn phí, có hiệu lực ngay sau khi xác nhận.
-    *   **Đổi thiết kế thẻ vật lý:** Phải đi qua luồng yêu cầu phát hành lại thẻ, áp dụng phí phát hành lại tiêu chuẩn (ví dụ: 100,000 VND trừ trực tiếp vào tài khoản thanh toán nguồn).
+2.  **Quy tắc khôi phục hành trình rớt luồng (Drop-off Recovery Rules):**
+    *   If a customer drops off and returns within **15 days**, the system automatically recovers the application, pre-filling all information including the selected `card_art_id`.
+    *   After 15 days, the application is purged and the customer must start from scratch.
+3.  **Quy tắc quản lý vòng đời Card Art (Lifecycle & Deprecation Rules):**
+    *   Khi một mẫu thiết kế Card Art cụ thể bị loại bỏ hoặc ngừng hỗ trợ in ấn vật lý do hết chiến dịch marketing (Trạng thái thiết kế đổi từ `ACTIVE` sang `DEPRECATED` trên DBS):
+        *   **Đối với thẻ ảo đang hoạt động trên App:** Vẫn giữ nguyên hiển thị hình ảnh cũ để đảm bảo tính cá nhân hóa đã cam kết với khách hàng.
+        *   **Đối với luồng phát hành lại thẻ vật lý (Mất/Hỏng/Gia hạn):** Hệ thống DBS kiểm tra nếu mã `card_art_id` của thẻ hiện tại ở trạng thái `DEPRECATED` -> Hiển thị Popup [ERR_CARD_001] yêu cầu khách hàng thực hiện thay đổi mẫu Card Art mới đang hoạt động (`ACTIVE`) trước khi cho phép xác nhận yêu cầu phát hành lại thẻ.
+4.  **Quy tắc đổi thiết kế thẻ (Change Card Art Rules):**
+    *   Khách hàng có thể thay đổi thiết kế ảnh hiển thị thẻ ảo trên App Digibank bất kỳ lúc nào thông qua menu `[Quản lý thẻ -> Đổi thiết kế thẻ]`.
+    *   Tính năng đổi thiết kế thẻ ảo hiển thị trên App là **miễn phí**.
+    *   Nếu khách hàng yêu cầu in lại thẻ vật lý theo mẫu thiết kế mới đổi, hệ thống sẽ thực hiện thu phí phát hành lại thẻ (ví dụ: 100,000 VND trừ trực tiếp vào tài khoản thanh toán nguồn).
+5.  **Xác thực sinh trắc học Face Authen (Tuân thủ QĐ 2345/QĐ-NHNN):**
+    *   Khi thực hiện phát hành thẻ trực tuyến, hệ thống bắt buộc yêu cầu xác thực khuôn mặt sinh trắc học (Face Authen). 
+    *   Ảnh khuôn mặt chụp live (liveness detection) của khách hàng trên thiết bị di động phải được đối khớp chính xác với ảnh chân dung sinh trắc học đã lưu trữ trong chip CCCD (thông qua kết nối NFC đọc thẻ) hoặc dữ liệu định danh được chia sẻ từ ứng dụng VNeID của Bộ Công An, đảm bảo tuân thủ nghiêm ngặt Quyết định 2345/QĐ-NHNN của Ngân hàng Nhà nước Việt Nam đối với hành trình đăng ký mở tài khoản và sản phẩm tài chính trên kênh số.
+6.  **Giờ vận hành hệ thống và xử lý Batch (Batch Time Check):**
+    *   Hệ thống kiểm tra giờ vận hành (Batch Time Check): Từ **22h00 đến 01h00 hàng ngày** (khung giờ chạy đối soát, chạy batch cuối ngày của hệ thống Core Banking và Core Card).
+    *   Nếu khách hàng nhấn xác nhận phát hành thẻ trong khung giờ này, hệ thống sẽ chặn giao dịch và hiển thị popup thông báo hệ thống bảo trì định kỳ, tự động lưu tạm hồ sơ ở trạng thái nháp và kích hoạt luồng hậu kiểm tự động khi hệ thống mở lại, hoặc hướng dẫn khách hàng quay lại đăng ký sau 01h00.
+7.  **Giới hạn số lần thử lại OTP (OTP Retry Limits):**
+    *   Khách hàng chỉ được phép nhập sai mã xác thực OTP tối đa **5 lần liên tiếp**.
+    *   Nếu vượt quá giới hạn 5 lần, giao dịch ký số mở thẻ tín dụng hiện tại sẽ bị khóa ngay lập tức trong vòng 24 giờ vì lý do bảo mật.
+    *   Khách hàng có thể yêu cầu gửi lại OTP tối đa **3 lần** trong một phiên giao dịch; nếu quá 3 lần yêu cầu gửi lại mà vẫn chưa xác thực thành công, hành trình sẽ tự động bị hủy và đưa về trạng thái rớt luồng (drop-off).
+8.  **Hạn mức giao dịch ban đầu cho thẻ ảo (Velocity Limits):**
+    *   Để phòng ngừa rủi ro gian lận trực tuyến ngay sau khi phát hành thẻ, thẻ phi vật lý (Instant Digital Card) khi mới được kích hoạt và chưa kích hoạt thẻ vật lý sẽ bị áp dụng hạn mức chi tiêu tạm thời tối đa **50,000,000 VND/ngày**.
+    *   Hạn mức chi tiêu ngày này sẽ tự động được nâng lên đúng hạn mức phê duyệt chính thức của thẻ ngay sau khi khách hàng nhận và kích hoạt thành công thẻ vật lý bằng cách quét mã QR giao kèm.
 
 ---
 
@@ -208,30 +184,9 @@ sequenceDiagram
 ### Popup lỗi [ERR_CARD_009]: Lỗi kết nối khởi tạo thẻ
 *   **Tiêu đề (Title):** Đăng ký chưa hoàn tất
 *   **Nội dung mô tả (Content):** Hệ thống đang gặp gián đoạn kết nối trong quá trình khởi tạo thông tin thẻ tín dụng của Quý khách. Hồ sơ của Quý khách đã được lưu tạm. Vui lòng thử lại sau ít phút hoặc liên hệ Hotline 1900xxxx để được hỗ trợ kiểm tra trạng thái phê duyệt.
-*   **Nút hành động (CTA):**
+*   **Nút hành động (CTA):** 
     *   `[Thử lại]`: Tự động gọi lại API tạo thẻ.
     *   `[Đóng]`: Quay về trang chủ Digibank.
-
-### Popup lỗi [ERR_CARD_010]: Hệ thống đang trong khung bảo trì batch
-*   **Tiêu đề (Title):** Hệ thống đang bảo trì
-*   **Nội dung mô tả (Content):** Hệ thống đang trong khung giờ bảo trì định kỳ (22h00 - 01h00 hàng ngày) để đối soát giao dịch cuối ngày của Core Banking & Core Card. Hồ sơ đăng ký mở thẻ của Quý khách đã được lưu nháp tự động. Vui lòng quay lại hoàn tất sau 01h00 hoặc đăng ký Nhận thông báo để Digibank nhắc lại khi hệ thống mở giao dịch.
-*   **Nút hành động (CTA):**
-    *   `[Nhận thông báo]`: Đăng ký push notification nhắc lại sau 01h00, tự đóng popup về trang chủ.
-    *   `[Đóng]`: Quay về trang chủ Digibank.
-
-### Popup lỗi [ERR_CARD_011]: Sinh trắc học khuôn mặt không khớp
-*   **Tiêu đề (Title):** Xác thực khuôn mặt không thành công
-*   **Nội dung mô tả (Content):** Quý khách đã thử xác thực khuôn mặt 3 lần nhưng không khớp với ảnh chân dung trên CCCD/VNeID. Vì lý do bảo mật theo Quyết định 2345/QĐ-NHNN, luồng đăng ký thẻ tín dụng online đã tạm dừng. Quý khách vui lòng đến chi nhánh MSB gần nhất hoặc liên hệ Hotline 1900xxxx để được hỗ trợ định danh và mở thẻ trực tiếp.
-*   **Nút hành động (CTA):**
-    *   `[Tìm chi nhánh gần nhất]`: Mở bản đồ chi nhánh MSB trong App.
-    *   `[Gọi Hotline]`: Gọi 1900xxxx.
-
-### Popup lỗi [ERR_CARD_012]: Khóa giao dịch do nhập sai OTP
-*   **Tiêu đề (Title):** Giao dịch tạm khóa
-*   **Nội dung mô tả (Content):** Quý khách đã nhập sai mã OTP 5 lần liên tiếp. Vì lý do bảo mật, giao dịch ký số mở thẻ tín dụng của Quý khách đã bị tạm khóa trong 24 giờ. Quý khách vui lòng quay lại sau hoặc liên hệ Hotline 1900xxxx nếu cần hỗ trợ gấp.
-*   **Nút hành động (CTA):**
-    *   `[Đã hiểu]`: Đóng popup, quay về trang chủ Digibank.
-    *   `[Gọi Hotline]`: Gọi 1900xxxx.
 
 ---
 

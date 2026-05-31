@@ -1,6 +1,6 @@
 # [TÊN DỰ ÁN / TÊN TÍNH NĂNG]
 ## TÀI LIỆU YÊU CẦU NGHIỆP VỤ - HÀNH TRÌNH THANH TOÁN DỊCH VỤ, HẠN MỨC & TÍN DỤNG SỐ (TRANSACTION, PAYMENT & LENDING)
-**Mã tài liệu:** DCTBR-[LEN/PAY-XXXX] BRD [Tên hành trình/MVP]  
+**Mã tài liệu:** BRD-[LEN/PAY-XXXX] [Tên hành trình/MVP]  
 **Phiên bản:** Ver X.X  
 **Ngày cập nhật:** DD/MM/YYYY  
 **Trạng thái:** [Draft / Under Review / Released]

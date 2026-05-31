@@ -1,11 +1,11 @@
-# 🏛️ MSB CTB Product Owner BRD Standards & AI Agent Hub
+# 🏛️ Digital Banking Product Owner BRD Standards & AI Agent Hub
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![PO Standard: Banking](https://img.shields.io/badge/PO_Standard-Banking_&_Fintech-FF4F00.svg)](#)
 [![Target: Human & AI](https://img.shields.io/badge/Target-Human_&_AI_Agents-00C853.svg)](#)
 [![Documentation: Markdown](https://img.shields.io/badge/Documentation-Markdown_Fidelity-7F00FF.svg)](#)
 
-Chào mừng bạn đến với **MSB CTB Product Owner BRD Standards & AI Agent Hub**! 🚀
+Chào mừng bạn đến với **Digital Banking Product Owner BRD Standards & AI Agent Hub**! 🚀
 
 Tài nguyên này là bộ cẩm nang, biểu mẫu (templates) và tài liệu mẫu (sample BRDs) đặc tả yêu cầu nghiệp vụ (Business Requirement Document - BRD) chuẩn hóa cấp độ ngân hàng số bán lẻ hiện đại. Được đúc kết thực chiến qua việc phân tích và đồng bộ hàng chục dự án lớn, bộ tài nguyên này giải quyết triệt để vấn đề lớn nhất của Product Owners (PO) và Business Analysts (BA): **"Tài liệu viết mơ hồ, thiếu logic ngầm hệ thống, dẫn đến Dev hiểu sai và QA bỏ sót kịch bản kiểm thử."**
 
@@ -15,7 +15,7 @@ Tài nguyên này là bộ cẩm nang, biểu mẫu (templates) và tài liệu 
 
 ## 🌟 Tại sao bộ tiêu chuẩn này lại khác biệt?
 
-Trái ngược với các tài liệu mô tả nghiệp vụ truyền thống vốn chỉ liệt kê màn hình tĩnh và tính năng sơ sài, bộ tiêu chuẩn **MSB CTB** định vị chất lượng BRD ở tầm cao mới:
+Trái ngược với các tài liệu mô tả nghiệp vụ truyền thống vốn chỉ liệt kê màn hình tĩnh và tính năng sơ sài, bộ tiêu chuẩn **Digital Banking** định vị chất lượng BRD ở tầm cao mới:
 
 *   **Tư duy As-is vs To-be rõ ràng:** Phân tích điểm gãy hành trình hiện tại và thiết kế quy trình tự động hóa STP (Straight-Through Processing) tối ưu nhất.
 *   **Ma trận Đặc tả Nghiệp vụ (The Matrix Table):** Đặc tả chi tiết mối quan hệ giữa Thao tác khách hàng, Phản hồi hệ thống (Business Rules), và Bước đi tiếp theo (Next Action).
@@ -49,8 +49,8 @@ po-brd-sharing-hub/
 │   └── UAT-PAY-VietQR_Scan_Transfer-20260525.xlsx  # Bộ UAT Test Suite VietQR chính thức dạng Excel
 └── Samples/                 # 🚀 Thư mục chứa tài liệu BRD mẫu thực tế
     ├── README.md            # Tổng quan và hướng dẫn học tập từ các mẫu BRD
-    ├── DCTBR-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md  # BRD mẫu quét VietQR cao cấp (Ver 2.1)
-    ├── DCTBR-[CARD] BRD Tùy chọn ảnh hiển thị thẻ tín dụng khi đăng ký mới.md  # BRD mẫu mở thẻ tự chọn ảnh hiển thị (Ver 2.2)
+    ├── BRD-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md  # BRD mẫu quét VietQR cao cấp (Ver 2.1)
+    ├── BRD-[CARD] Tùy chọn ảnh hiển thị thẻ tín dụng khi đăng ký mới.md  # BRD mẫu mở thẻ tự chọn ảnh hiển thị (Ver 2.2)
     ├── UAT-PAY-VietQR_Scan_Transfer-20260525.xlsx  # Tệp UAT Test Suite mẫu dạng Excel
     └── sample_brd_atm_qr_withdrawal.md      # BRD mẫu rút tiền mặt QR tại cây ATM
 ```
@@ -99,22 +99,23 @@ Theo dõi các bước phát triển, nâng cấp và chuẩn hóa quy trình bi
 | **Ver 1.0** | 22/05/2026 | AI PO Agent | Khởi tạo Hub tiêu chuẩn, cung cấp các template (Standard, Onboarding, Transaction) và cẩm nang viết BRD thực chiến. |
 | **Ver 2.0** | 25/05/2026 | Antigravity PO Agent | Nâng cấp tài liệu mẫu quét VietQR chuyển khoản (Ver 2.0) tích hợp 10 chốt chặn nghiệp vụ (Root check, Overdraft source, QĐ 2345 Face Authen, Reversal 30s...). |
 | **Ver 2.1** | 25/05/2026 | Multi-Agent Team | Thiết lập kiến trúc Multi-Agent 3 giai đoạn. Tinh gọn quy trình Agent 1 và bàn giao kiểm soát độc lập cho Agent 2 (Validate 20 tiêu chí) và Agent 3 (Tự động sinh UAT Test Suite dạng Excel). Hoàn thành bộ UAT Test Suite mẫu gửi vào thư mục `Samples/`. |
-| **Ver 2.2** | 31/05/2026 | Antigravity PO Agent | **[MỚI NHẤT]** Nâng cấp chuẩn đặc tả sang **Sub-step & Branching Matrix (7 cột)** tích hợp chốt chặn inline, hệ thống check logic và mã hóa sự kiện log `EVT_`. Áp dụng biên soạn thực chiến mẫu BRD Tùy chọn Card Art (`Samples/DCTBR-[CARD]...`) và báo cáo thẩm định đạt chuẩn chất lượng 20/20. |
+| **Ver 2.2** | 31/05/2026 | Antigravity PO Agent | Nâng cấp chuẩn đặc tả sang **Sub-step & Branching Matrix (7 cột)** tích hợp chốt chặn inline, hệ thống check logic và mã hóa sự kiện log `EVT_`. Áp dụng biên soạn thực chiến mẫu BRD Tùy chọn Card Art (`Samples/BRD-[CARD]...`) và báo cáo thẩm định đạt chuẩn chất lượng 20/20. |
+| **Ver 2.3** | 31/05/2026 | Antigravity PO Agent | **[MỚI NHẤT]** Nâng cấp toàn diện **Agent 3 (po-uat-generator)** tích hợp ánh xạ mã log sự kiện `EVT_` vào kịch bản UAT, bổ sung cột đối soát log kỹ thuật (Cột R) và hoàn chỉnh kịch bản test phân nhánh Pass/Fail. |
 
 ---
 
 ## 🚀 Hướng dẫn Bắt đầu Nhanh (Quick Start)
 
 ### Dành cho Product Owners & Business Analysts (Con người)
-1.  **Học hỏi cẩm nang:** Đọc tệp [Guides/po_writing_guide_for_ai_agents.md](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Guides/po_writing_guide_for_ai_agents.md) để nắm vững các chốt chặn nghiệp vụ ngân hàng cần phải mô tả.
-2.  **Sử dụng tài liệu mẫu để lấy cảm hứng:** Khám phá tệp [Samples/DCTBR-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Samples/DCTBR-%5BDaily%20Banking%5D%20%5BPayment%5D%20Que%CC%81t%20QR%20chuye%CC%82%CC%89n%20khoa%CC%81n%20VietQR.md) để học cách dựng một sơ đồ sequence bằng Mermaid và cách viết ma trận đặc tả hành trình.
+1.  **Học hỏi cẩm nang:** Đọc tệp [Guides/po_writing_guide_for_ai_agents.md](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Guides/po_writing_guide_for_ai_agents.md) để nắm vững các chốt chặn nghiệp vụ ngân hàng cần phải mô tả.
+2.  **Sử dụng tài liệu mẫu để lấy cảm hứng:** Khám phá tệp [Samples/BRD-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Samples/BRD-%5BDaily%20Banking%5D%20%5BPayment%5D%20Que%CC%81t%20QR%20chuye%CC%82%CC%89n%20khoa%CC%89n%20VietQR.md) để học cách dựng một sơ đồ sequence bằng Mermaid và cách viết ma trận đặc tả hành trình.
 3.  **Tải biểu mẫu để biên soạn:** Sao chép các tệp template trong thư mục `Templates/` và bắt đầu điền nội dung dự án mới của bạn.
 
 ### Dành cho AI Assistants (Trợ lý AI của bạn)
-Bạn có thể đào tạo mô hình ngôn ngữ lớn (như Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro) để tự động đặc tả BRD chuẩn MSB CTB bằng cách:
-1.  Đính kèm hoặc copy-paste tệp [Guides/po_writing_guide_for_ai_agents.md](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Guides/po_writing_guide_for_ai_agents.md) và tệp [Guides/po_brd_creator_skill.md](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Guides/po_brd_creator_skill.md).
+Bạn có thể đào tạo mô hình ngôn ngữ lớn (như Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro) để tự động đặc tả BRD chuẩn Digital Banking bằng cách:
+1.  Đính kèm hoặc copy-paste tệp [Guides/po_writing_guide_for_ai_agents.md](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Guides/po_writing_guide_for_ai_agents.md) và tệp [Guides/po_brd_creator_skill.md](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Guides/po_brd_creator_skill.md).
 2.  Nhập prompt:
-    > *"Đọc hai tài liệu đính kèm để hiểu tiêu chuẩn PO của MSB CTB. Dựa trên đó, hãy phân tích yêu cầu sau đây và thực hiện Phase 2 (hỏi làm rõ nghiệp vụ): 'Tôi muốn làm chức năng Đăng ký tài khoản thanh toán trực tuyến tích hợp định danh VNeID cho Khách hàng mới.'"*
+    > *"Đọc hai tài liệu đính kèm để hiểu tiêu chuẩn PO của Digital Banking. Dựa trên đó, hãy phân tích yêu cầu sau đây và thực hiện Phase 2 (hỏi làm rõ nghiệp vụ): 'Tôi muốn làm chức năng Đăng ký tài khoản thanh toán trực tuyến tích hợp định danh VNeID cho Khách hàng mới.'"*
 
 ---
 
@@ -128,7 +129,7 @@ Mọi đóng góp từ cộng đồng Product Owner và FinTech tại Việt Nam
 
 ## 📄 Bản quyền & Giấy phép (License)
 
-Dự án này được cấp phép theo các điều khoản của **MIT License**. Bạn được toàn quyền tự do sao chép, sửa đổi, thương mại hóa hoặc chia sẻ cho tổ chức của mình mà không cần xin phép trước. Chi tiết xem tại tệp [LICENSE](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/LICENSE).
+Dự án này được cấp phép theo các điều khoản của **MIT License**. Bạn được toàn quyền tự do sao chép, sửa đổi, thương mại hóa hoặc chia sẻ cho tổ chức của mình mà không cần xin phép trước. Chi tiết xem tại tệp [LICENSE](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/LICENSE).
 
 ---
 

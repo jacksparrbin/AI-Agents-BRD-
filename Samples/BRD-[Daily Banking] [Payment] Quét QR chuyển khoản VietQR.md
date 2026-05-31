@@ -1,6 +1,6 @@
 # HÀNH TRÌNH QUÉT MÃ QR CHUYỂN KHOẢN THEO TIÊU CHUẨN VIETQR TRÊN MOBILE APP (VIETQR SCAN & TRANSFER)
 ## TÀI LIỆU YÊU CẦU NGHIỆP VỤ (BUSINESS REQUIREMENT DOCUMENT - BRD)
-**Mã tài liệu:** DCTBR-[PAY-008] BRD VietQR Scan & Transfer  
+**Mã tài liệu:** BRD-[PAY-008] VietQR Scan & Transfer  
 **Phân hệ:** Daily Banking - Payment  
 **Phiên bản:** Ver 2.0  
 **Ngày cập nhật:** 25/05/2026  

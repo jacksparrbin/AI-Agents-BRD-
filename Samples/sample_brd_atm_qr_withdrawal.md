@@ -1,6 +1,6 @@
 # TÀI LIỆU YÊU CẦU NGHIỆP VỤ (BRD)
 ## HÀNH TRÌNH RÚT TIỀN BẰNG MÃ QR TẠI ATM TRÊN MOBILE APP (ATM QR CARDLESS CASH WITHDRAWAL)
-**Mã tài liệu:** DCTBR-[PAY-005] BRD ATM QR Withdrawal  
+**Mã tài liệu:** BRD-[PAY-005] ATM QR Withdrawal  
 **Phân hệ:** Daily Banking - Payment  
 **Phiên bản:** Ver 1.0  
 **Ngày cập nhật:** 22/05/2026  

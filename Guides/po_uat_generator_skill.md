@@ -1,6 +1,6 @@
 ---
 name: po-uat-generator
-description: "Tự động sinh bộ UAT Test Cases từ tài liệu BRD ngân hàng số MSB CTB đã được validate. Skill đóng vai UAT Specialist Agent, phân tích BRD và xuất file .xlsx chứa đầy đủ Test Cases (Happy/Alternative/Exception), Test Data Scenarios, Traceability Matrix, và Sign-off Checklist. Output phục vụ PO/Stakeholders nghiệm thu UAT trước khi triển khai. Dùng khi user nói: \"tạo test case UAT\", \"sinh test cases từ BRD\", \"viết kịch bản nghiệm thu\", \"tạo bộ test UAT\", \"UAT test suite\", \"nghiệm thu tính năng\", \"test case cho PO\", \"kịch bản test nghiệp vụ\", \"acceptance test\", \"bộ test nghiệm thu\", hoặc khi user đính kèm file BRD .md và muốn tạo test cases. KHÔNG dùng cho: viết BRD (dùng po-brd-creator), validate BRD (dùng po-brd-validator), viết test case kỹ thuật/API/unit test, viết test automation script."
+description: "Tự động sinh bộ UAT Test Cases từ tài liệu BRD ngân hàng số Digital Banking đã được validate. Skill đóng vai UAT Specialist Agent, phân tích BRD và xuất file .xlsx chứa đầy đủ Test Cases (Happy/Alternative/Exception), Test Data Scenarios, Traceability Matrix, và Sign-off Checklist. Output phục vụ PO/Stakeholders nghiệm thu UAT trước khi triển khai. Dùng khi user nói: \"tạo test case UAT\", \"sinh test cases từ BRD\", \"viết kịch bản nghiệm thu\", \"tạo bộ test UAT\", \"UAT test suite\", \"nghiệm thu tính năng\", \"test case cho PO\", \"kịch bản test nghiệp vụ\", \"acceptance test\", \"bộ test nghiệm thu\", hoặc khi user đính kèm file BRD .md và muốn tạo test cases. KHÔNG dùng cho: viết BRD (dùng po-brd-creator), validate BRD (dùng po-brd-validator), viết test case kỹ thuật/API/unit test, viết test automation script."
 author: Bình Nguyễn Thanh
 ---
 
@@ -48,28 +48,27 @@ graph TD
 
 ### BƯỚC 1: ĐỌC & PHÂN RÃ BRD THÀNH CÁC LUỒNG TESTABLE
 
-Agent đọc toàn bộ BRD và trích xuất 3 nhóm luồng:
+Agent đọc toàn bộ BRD và trích xuất 3 nhóm luồng từ **Sub-step & Branching Matrix (7 cột)**:
 
 #### 1.1. Happy Path (Luồng chính thành công)
-- Trích từ Matrix Table: chuỗi bước liên tục từ Entry Point → Success End State.
+- Trích từ Matrix Table: chuỗi bước liên tục có kết quả thành công dựa trên cell `Pass →` của từng sub-step từ Entry Point → Success End State.
 - Mỗi Happy Path = 1 end-to-end scenario hoàn chỉnh.
-- VD: "KH quét QR động → Hệ thống giải mã → Inquiry NAPAS → Nhập tiền (locked) → Smart OTP → Chuyển tiền thành công → Biên lai"
+- Mỗi bước thành công phải tương ứng với mã sự kiện log Pass (ví dụ: `EVT_CARD_BATCH_OK`).
 
 #### 1.2. Alternative Paths (Nhánh rẽ hợp lệ)
-- Trích từ các `alt/else` trong Matrix Table hoặc Mermaid.
-- Các luồng vẫn thành công nhưng đi qua nhánh khác.
+- Trích từ các nhánh rẽ hợp lệ (chuyển sang bước khác ngoài chuỗi chính nhưng vẫn thành công) trong cell `Pass →` của các sub-step hoặc trong Mermaid.
 - VD: "QR tĩnh → user nhập tiền thủ công" vs "QR động → tiền auto-fill + lock"
 
 #### 1.3. Exception Paths (Nhánh lỗi/chặn)
-- Trích từ popup lỗi (Section UI Copy & Popup) + exception rules trong Matrix Table.
-- Mỗi popup lỗi = ít nhất 1 test case exception.
-- VD: ERR_INVALID_QR, ERR_INVALID_CRC, ERR_INQUIRY_FAILED, ERR_FACE_AUTH_FAILED...
+- Trích từ cell `Fail →` của các sub-step trong Matrix Table và Section UI Copy & Popup.
+- Mỗi nhánh `Fail →` dẫn tới popup lỗi hoặc chặn giao dịch/khóa luồng = ít nhất 1 test case exception.
+- Mỗi test case exception phải gắn chặt với **Mã sự kiện log Fail** tương ứng (ví dụ: `EVT_CARD_FACE_MISMATCH_LOCK`).
 
 #### 1.4. Kiểm đếm Coverage
 Agent phải tự kiểm tra:
-- Mỗi bước trong Matrix Table được cover bởi ≥ 1 test case.
+- Mỗi sub-step trong Matrix Table được cover bởi ≥ 1 test case (cả nhánh Pass và Fail nếu có).
 - Mỗi popup lỗi trong BRD có ≥ 1 test case kiểm tra.
-- Mỗi Business Rule (system check) có ≥ 1 test case trigger.
+- Mỗi mã sự kiện log `EVT_` (cả Pass và Fail) có ≥ 1 test case trigger và đối soát.
 
 ---
 
@@ -91,10 +90,11 @@ Mỗi test case viết bằng **ngôn ngữ nghiệp vụ** (không dùng thuậ
 | H–N | **Bước 4–10** | Tiếp tục (tối đa 10 bước) | ... |
 | O | **Kết quả kỳ vọng** | PO nhìn thấy gì trên app nếu PASS | Màn hình "Chuyển khoản thành công" hiện: mã GD, tên người nhận, số tiền, thời gian. Nhận Push Noti biến động số dư. |
 | P | **Mức ưu tiên** | Critical / High / Medium / Low | Critical |
-| Q | **Mapping BRD** | Bước nào trong Matrix Table | Bước 1 → Bước 8 (full Happy Path) |
-| R | **Kết quả thực tế** | PO điền khi test | *(để trống)* |
-| S | **PASS/FAIL** | PO tick khi test | *(để trống)* |
-| T | **Ghi chú** | PO ghi bug/issue nếu FAIL | *(để trống)* |
+| Q | **Mapping BRD** | Sub-step tương ứng trong Matrix | Sub-step 1.1 → 1.2 (Happy Path) |
+| R | **Mã sự kiện log dự kiến** | Mã log `EVT_` dự kiến được ghi nhận hệ thống | `EVT_PAY_INQUIRY_SUCCESS` |
+| S | **Kết quả thực tế** | PO điền khi test | *(để trống)* |
+| T | **PASS/FAIL** | PO tick khi test | *(để trống)* |
+| U | **Ghi chú** | PO ghi bug/issue nếu FAIL | *(để trống)* |
 
 #### Quy tắc viết bước thao tác
 - **PHẢI** dùng ngôn ngữ người dùng cuối: "Bấm nút [Tiếp tục]", "Nhập số tiền 500,000 VND", "Quét mã QR"
@@ -186,11 +186,12 @@ Dòng cuối cùng:
 
 - **Header row**: Bold, background xanh đậm (#1F4E79), chữ trắng, font Arial 11
 - **Data rows**: Font Arial 10, alternate row shading (#F2F7FB)
-- **Cột PASS/FAIL**: Conditional formatting — PASS = green background, FAIL = red background
-- **Cột Mức ưu tiên**: Critical = đỏ bold, High = cam, Medium = vàng, Low = xám
+- **Cột PASS/FAIL (Cột T)**: Conditional formatting — PASS = green background, FAIL = red background
+- **Cột Mức ưu tiên (Cột P)**: Critical = đỏ bold, High = cam, Medium = vàng, Low = xám
 - **Freeze panes**: Đóng băng header row + cột TC-ID
 - **Auto-filter**: Bật filter cho tất cả cột
 - **Column width**: Auto-fit, tối thiểu 15, tối đa 50
+- **Cột Mã sự kiện log dự kiến (Cột R)**: Canh lề trái, font chữ Courier New hoặc Arial 9 để dễ nhìn dạng mã code
 - **Sheet "Sign-off"**: Có border đậm cho bảng ký xác nhận, merge cells cho dòng kết luận
 
 #### Tên file output

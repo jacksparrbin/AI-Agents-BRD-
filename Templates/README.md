@@ -1,4 +1,4 @@
-# 📋 MSB CTB BRD Templates Directory
+# 📋 Digital Banking BRD Templates Directory
 
 Chào mừng bạn đến với thư mục chứa các **Tài liệu biểu mẫu (BRD Templates)** chuẩn hóa. Bộ tài liệu này được đúc kết từ thực tế phân tích nghiệp vụ ngân hàng bán lẻ hiện đại nhằm cung cấp các tiêu chuẩn biểu diễn nghiệp vụ rõ ràng, không mơ hồ cho đội ngũ Phát triển (Dev) và Kiểm thử (QA/QC).
 
@@ -8,15 +8,15 @@ Chào mừng bạn đến với thư mục chứa các **Tài liệu biểu mẫ
 
 Chúng tôi cung cấp **3 mẫu tài liệu BRD chuyên biệt** phù hợp với từng phân hệ tính năng và hành trình cụ thể:
 
-### 1. [Mẫu BRD Tiêu chuẩn](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Templates/brd_template_standard.md) (`brd_template_standard.md`)
+### 1. [Mẫu BRD Tiêu chuẩn](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Templates/brd_template_standard.md) (`brd_template_standard.md`)
 *   **Mục đích:** Áp dụng cho các tính năng nghiệp vụ chung, các tiện ích bổ sung không thuộc nhóm đăng ký/chuyển tiền/tín dụng.
 *   **Nội dung chính:** Cung cấp khung cấu trúc chuẩn hóa cho một BRD tiêu chuẩn, bao gồm Lịch sử phiên bản, Thuật ngữ, Yêu cầu nghiệp vụ chi tiết, và Yêu cầu phi chức năng.
 
-### 2. [Mẫu BRD Onboarding & eKYC](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Templates/brd_template_onboarding.md) (`brd_template_onboarding.md`)
+### 2. [Mẫu BRD Onboarding & eKYC](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Templates/brd_template_onboarding.md) (`brd_template_onboarding.md`)
 *   **Mục đích:** Chuyên biệt cho các hành trình **Đăng ký tài khoản mới (NTB)**, **Định danh khách hàng hiện hữu (eKYC)**, tích hợp dữ liệu dân cư quốc gia (VNeID/CCCD gắn chip), và kiểm tra bảo mật thiết bị.
 *   **Nội dung chính:** Tập trung vào các chốt chặn eKYC, phân tích rớt luồng (Drop-off), thu hồi hành trình (Recovery) và logic kiểm tra trùng lặp thông tin (Duplicate Checks).
 
-### 3. [Mẫu BRD Giao dịch & Tín dụng](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Templates/brd_template_transaction_lending.md) (`brd_template_transaction_lending.md`)
+### 3. [Mẫu BRD Giao dịch & Tín dụng](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Templates/brd_template_transaction_lending.md) (`brd_template_transaction_lending.md`)
 *   **Mục đích:** Thiết kế riêng cho hành trình tài chính bao gồm **Thanh toán hóa đơn (Billing)**, **Nạp tiền dịch vụ (Topup)**, **Chuyển tiền nhanh liên ngân hàng (VietQR)**, và **Mở hạn mức tín dụng trực tuyến (DigiLending)**.
 *   **Nội dung chính:** Đặc tả chi tiết về hạn mức giao dịch (Velocity Limits), chốt chặn sinh trắc học theo Quyết định 2345/QĐ-NHNN, cơ chế Smart OTP, hạch toán Core Banking, và bản đồ tích hợp dữ liệu (Data Mapping Schema).
 

@@ -1,6 +1,6 @@
 # [TÊN DỰ ÁN / TÊN TÍNH NĂNG]
 ## TÀI LIỆU YÊU CẦU NGHIỆP VỤ - HÀNH TRÌNH ĐĂNG KÝ MỚI & ĐỊNH DANH KHÁCH HÀNG (ONBOARDING & EKYC JOURNEY)
-**Mã tài liệu:** DCTBR-[CUS-XXXX] BRD Onboarding [Tên hành trình/MVP]  
+**Mã tài liệu:** BRD-[CUS-XXXX] Onboarding [Tên hành trình/MVP]  
 **Phiên bản:** Ver X.X  
 **Ngày cập nhật:** DD/MM/YYYY  
 **Trạng thái:** [Draft / Under Review / Released]

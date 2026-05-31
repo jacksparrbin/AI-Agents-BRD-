@@ -1,6 +1,6 @@
 ## KẾT QUẢ KIỂM TRA CHẤT LƯỢNG BRD (VALIDATION REPORT) - CẬP NHẬT VÒNG 2
 
-**File BRD**: DCTBR-[CARD] BRD Tùy chọn ảnh hiển thị thẻ tín dụng khi đăng ký mới.md
+**File BRD**: BRD-[CARD] Tùy chọn ảnh hiển thị thẻ tín dụng khi đăng ký mới.md
 **Ngày validate**: 31/05/2026
 **Validator**: po-brd-validator (Agent 2)
 **Trạng thái thẩm định**: **ĐẠT (PASSED) — 20/20 ✅**
@@ -18,7 +18,7 @@
 
 | STT | Tiêu chí | Kết quả | Evidence / Ghi chú |
 | :---: | :--- | :---: | :--- |
-| V1 | Metadata đầy đủ | ✅ | Bản BRD cập nhật phiên bản Ver 1.1, ngày 31/05/2026, phân hệ Card Issuance - Onboarding đầy đủ, mã hiệu DCTBR-[CARD-008]. |
+| V1 | Metadata đầy đủ | ✅ | Bản BRD cập nhật phiên bản Ver 1.1, ngày 31/05/2026, phân hệ Card Issuance - Onboarding đầy đủ, mã hiệu BRD-[CARD-008]. |
 | V2 | Lịch sử thay đổi | ✅ | Bảng Change Log ở Section 1 đã được cập nhật dòng Ver 1.1 chi tiết ghi nhận tag [MODIFY] và mô tả các hạng mục sửa đổi theo Feedback của Agent 2. |
 | V3 | Glossary đầy đủ | ✅ | Bảng Glossary ở Section 2 đã được bổ sung đầy đủ 9 thuật ngữ mới bao gồm: OTP, API, FE, BE, PAN, CVV, JCB, Visa, VIP, giải nghĩa rõ nét nghiệp vụ ngân hàng. |
 | V4 | User Story nhất quán | ✅ | User Story ở Section 3.1 thống nhất cao với luồng nghiệp vụ mở thẻ và tự chọn Card Art cá nhân hóa trên App. |
@@ -58,7 +58,7 @@
 ### KẾT LUẬN THẨM ĐỊNH: ĐẠT CHUẨN XUẤT SẮC (PASSED)
 
 > [!NOTE]
-> Tài liệu BRD cập nhật phiên bản **Ver 1.1** đã hoàn thành xuất sắc **20/20 tiêu chí chất lượng nghiêm ngặt** theo quy chuẩn MSB CTB Standard. Tài liệu đã sẵn sàng để chuyển giao sang bước tiếp theo.
+> Tài liệu BRD cập nhật phiên bản **Ver 1.1** đã hoàn thành xuất sắc **20/20 tiêu chí chất lượng nghiêm ngặt** theo quy chuẩn Digital Banking Standard. Tài liệu đã sẵn sàng để chuyển giao sang bước tiếp theo.
 
 ---
 

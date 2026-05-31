@@ -1,7 +1,7 @@
 # Eval Test Suite — po-brd-creator (VietQR Domain)
 
 **Mục đích**: Đo lường chất lượng BRD mà Agent po-brd-creator tạo ra cho domain Chuyển khoản VietQR.
-**Baseline tham chiếu**: `Samples/DCTBR-[Daily Banking] [Payment] Quét QR chuyển khoán VietQR.md`
+**Baseline tham chiếu**: `Samples/BRD-[Daily Banking] [Payment] Quét QR chuyển khoản VietQR.md`
 **Skill được test**: `Guides/po_brd_creator_skill.md`
 **Tác giả**: Bình Nguyễn Thanh
 **Ngày tạo**: 24/05/2026

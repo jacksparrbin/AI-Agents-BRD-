@@ -8,7 +8,7 @@ Chào mừng bạn đến với thư mục **Cẩm nang & Cấu hình AI PO Agen
 
 Chúng tôi cung cấp **2 tài liệu nền tảng** để định hình tiêu chuẩn PO:
 
-### 1. [Cẩm nang Quy hoạch & Viết tài liệu BRD](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Guides/po_writing_guide_for_ai_agents.md) (`po_writing_guide_for_ai_agents.md`)
+### 1. [Cẩm nang Quy hoạch & Viết tài liệu BRD](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Guides/po_writing_guide_for_ai_agents.md) (`po_writing_guide_for_ai_agents.md`)
 *   **Mục đích:** Sách hướng dẫn thực chiến cho cả con người và AI để nắm bắt tư duy nghiệp vụ ngân hàng chuẩn mực.
 *   **Nội dung cốt lõi:**
     *   **Glossary chuẩn:** Định nghĩa các thuật ngữ lớn (CIF, NTB, ETB, DIP, VNeID, AML, ...).
@@ -16,7 +16,7 @@ Chúng tôi cung cấp **2 tài liệu nền tảng** để định hình tiêu 
     *   **Chuẩn UI Copy:** Viết popup báo lỗi không mơ hồ (Title, Content, CTA).
     *   **Data Mapping Spec:** Hướng dẫn thiết lập bản đồ dữ liệu API.
 
-### 2. [Cấu hình Agent Skill: PO BRD Creator](file:///Users/minhphuong/Documents/Ta%CC%80i%20lie%CC%A3%CC%82u%20Brd%20MSB%20CTB/Guides/po_brd_creator_skill.md) (`po_brd_creator_skill.md`)
+### 2. [Cấu hình Agent Skill: PO BRD Creator](file:///Users/minhphuong/Documents/AI%20folder/AI%20Agents%20vie%CC%82%CC%81t%20ta%CC%80i%20lie%CC%A3%CC%82u%20BRD/Guides/po_brd_creator_skill.md) (`po_brd_creator_skill.md`)
 *   **Mục đích:** Cung cấp định nghĩa kỹ năng chuyên biệt cho các mô hình ngôn ngữ lớn (như Claude, GPT, Gemini) để tự động hóa quy trình viết BRD.
 *   **Hành trình 4 bước của AI PO:**
     1.  **Phase 1:** Tiếp nhận & phân tích yêu cầu sơ khai (Analyze Inputs).
